@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Scorekort" />
+<title>Niohåls-scorekort</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background:
+      repeating-linear-gradient(
+        100deg,
+        #1c3e2d 0px, #1c3e2d 46px,
+        #1a3928 46px, #1a3928 92px
+      );
+    font-family: 'Inter', sans-serif;
+    color: #f2efe4;
+    padding: max(20px, env(safe-area-inset-top)) 14px calc(60px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .header { width: 100%; max-width: 640px; text-align: center; margin-bottom: 18px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; color: #c9a227; margin-bottom: 6px;
+  }
+  .title { font-family: 'Bitter', serif; font-weight: 800; font-size: 28px; color: #f7f4e9; margin: 0; }
+  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #a9c2ab; margin-top: 6px; }
+
+  .meta-card {
+    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); margin-bottom: 16px;
+  }
+  .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase;
+  }
+  .field input {
+    font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .field input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+
+  .players-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #8a2f24; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .course-field { margin-bottom: 14px; }
+  .course-input-row { display: flex; gap: 8px; }
+  .course-input-row input {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .course-input-row input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+  .locate-btn {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .locate-btn:disabled { opacity: 0.5; cursor: default; }
+  .locate-btn.loading { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .course-status {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6b6552; margin-top: 5px; min-height: 13px;
+  }
+  .course-status.error { color: #b23a2e; }
+  .course-status.success { color: #2f5233; }
+  .player-row-field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .player-row-field .swatch-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .player-row-field input {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .player-row-field input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+  .remove-player-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: none; background: #e5dfc8;
+    color: #8a2f24; font-size: 16px; font-weight: 700; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .remove-player-btn:disabled { opacity: 0.35; cursor: default; }
+  .add-player-btn {
+    width: 100%; margin-top: 2px; padding: 9px; border-radius: 6px;
+    border: 1.5px dashed #b8ae8c; background: transparent; color: #6b6552;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .add-player-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .card {
+    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.32); padding: 14px 8px 18px; margin-bottom: 14px;
+    overflow-x: auto;
+  }
+  table.score { border-collapse: collapse; width: 100%; min-width: 560px; }
+  table.score th, table.score td { text-align: center; padding: 6px 4px; }
+  .rowlabel {
+    text-align: left !important; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.06em; color: #6b6552; text-transform: uppercase; padding-left: 6px !important; white-space: nowrap;
+  }
+  table.score thead th {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 14px; color: #2b2b2b;
+    border-bottom: 2px solid #2b2b2b; position: relative; height: 38px;
+  }
+  table.score tbody tr.par-row td {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6b6552; border-bottom: 1px solid #d8d0b8;
+  }
+  table.score tbody tr.player-row td { border-bottom: 1px solid #e5dfc8; }
+  .name-cell {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 13px; color: #2b2b2b;
+    text-align: left !important; padding-left: 6px !important; white-space: nowrap;
+    max-width: 90px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .total-cell { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #2b2b2b; }
+  .relpar { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8a2f24; }
+
+  input.scoreinput {
+    width: 34px; height: 34px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px; font-weight: 600; color: #2b2b2b; background: #fffdf7;
+    border: 1.5px solid #cfc7ab; border-radius: 4px; padding: 0;
+  }
+  input.scoreinput:focus { outline: none; border-color: #2f5233; box-shadow: 0 0 0 2px rgba(47,82,51,0.35); }
+  .cell.birdie input.scoreinput { border-radius: 50%; border-color: #c9a227; border-width: 2px; }
+  .cell.eagle input.scoreinput {
+    border-radius: 50%; border-color: #c9a227; border-width: 2px;
+    box-shadow: 0 0 0 2.5px #f5f0e1, 0 0 0 4.5px #c9a227;
+  }
+  .cell.bogey input.scoreinput { border-radius: 3px; border-color: #b23a2e; border-width: 2px; }
+  .cell.dbogey input.scoreinput {
+    border-radius: 3px; border-color: #b23a2e; border-width: 2px;
+    box-shadow: 0 0 0 2.5px #f5f0e1, 0 0 0 4.5px #b23a2e;
+  }
+
+  .flag {
+    position: absolute; top: -2px; left: 50%; transform: translateX(-50%) scale(0.6);
+    width: 14px; height: 22px; opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .flag-active { opacity: 1; transform: translateX(-50%) scale(1); }
+  .flag-pole { position: absolute; left: 6px; top: 0; width: 1.5px; height: 22px; background: #2b2b2b; }
+  .flag-cloth {
+    position: absolute; left: 7px; top: 0; width: 0; height: 0;
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 9px solid #b23a2e;
+  }
+
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #a9c2ab; margin-bottom: 18px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 12px; height: 12px; display: inline-block; border-width: 2px; border-style: solid; }
+  .sw-birdie { border-radius: 50%; border-color: #c9a227; }
+  .sw-par { border-radius: 3px; border-color: #cfc7ab; }
+  .sw-bogey { border-radius: 3px; border-color: #b23a2e; }
+
+  .btnrow {
+    width: 100%; max-width: 640px; display: flex; gap: 8px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 18px;
+  }
+  button {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; border: none;
+    border-radius: 7px; padding: 10px 14px; cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary { background: #c9a227; color: #1c2b1c; }
+  .btn-secondary { background: #f5f0e1; color: #2b2b2b; }
+  .btn-danger { background: #b23a2e; color: #fff2ee; }
+  .btn-ghost { background: transparent; color: #f2efe4; border: 1px solid rgba(242,239,228,0.4); }
+  .btn-ghost-dark { background: transparent; color: #2b2b2b; border: 1px solid #cfc7ab; }
+
+  .confirm-inline {
+    width: 100%; max-width: 640px; background: #b23a2e; color: #fff2ee; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 14px; display: none; align-items: center;
+    justify-content: space-between; gap: 10px; font-size: 13px;
+  }
+  .confirm-inline.show { display: flex; }
+  .confirm-inline .btns { display: flex; gap: 8px; }
+  .confirm-inline button { padding: 6px 12px; font-size: 12px; }
+
+  details.panel {
+    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  details.panel summary {
+    cursor: pointer; padding: 12px 16px; font-family: 'Bitter', serif; font-weight: 700;
+    font-size: 14px; color: #2b2b2b; list-style: none;
+  }
+  details.panel summary::-webkit-details-marker { display: none; }
+  details.panel[open] summary { border-bottom: 1px solid #d8d0b8; }
+  .panel-body { padding: 12px 16px 16px; }
+  pre.log {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.5; color: #2b2b2b;
+    white-space: pre; overflow-x: auto; margin: 0 0 10px; background: #fffdf7;
+    border: 1px solid #e5dfc8; border-radius: 6px; padding: 10px;
+  }
+  .panel-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .history-item { border-top: 1px solid #d8d0b8; padding-top: 10px; margin-top: 10px; }
+  .history-item:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+  .history-head {
+    display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #6b6552; margin-bottom: 6px;
+  }
+  .history-head strong { color: #2b2b2b; font-family: 'Bitter', serif; font-size: 13px; }
+  .empty-history { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6b6552; text-align: center; padding: 6px 0; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2b2b2b;
+    color: #f5f0e1; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 16px;
+    border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.4); z-index: 50; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 420px) {
+    .title { font-size: 22px; }
+    .meta-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap;"></div>
+
+  <div class="header">
+    <div class="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
+    <h1 class="title">Niohåls-scorekort</h1>
+    <div class="subtitle">9 hål · alla par 3 · par för rundan <span id="parTotalLabel">27</span></div>
+  </div>
+
+  <div class="meta-card">
+    <div class="meta-row">
+      <div class="field">
+        <label for="date">Datum</label>
+        <input id="date" type="date" />
+      </div>
+      <div class="field">
+        <label for="time">Starttid</label>
+        <input id="time" type="time" />
+      </div>
+    </div>
+
+    <div class="field course-field">
+      <label for="course">Golfbana</label>
+      <div class="course-input-row">
+        <input id="course" type="text" placeholder="T.ex. Djursholms GK" />
+        <button class="locate-btn" id="locateBtn" type="button" title="Hitta närmaste bana">📍</button>
+      </div>
+      <div class="course-status" id="courseStatus"></div>
+    </div>
+
+    <div class="players-label">Spelare (max 4)</div>
+    <div id="playersFields"></div>
+    <button class="add-player-btn" id="addPlayerBtn" type="button">+ Lägg till spelare</button>
+  </div>
+
+  <div class="card">
+    <table class="score">
+      <thead>
+        <tr id="headRow">
+          <th class="rowlabel">Hål</th>
+          <!-- hole headers injected -->
+          <th>Totalt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="par-row" id="parRow">
+          <td class="rowlabel">Par</td>
+          <!-- par cells injected -->
+          <td id="parTotalCell">27</td>
+        </tr>
+      </tbody>
+      <tbody id="playerRows"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch sw-birdie"></span> Birdie / eagle (dubbel ring)</span>
+    <span><span class="swatch sw-par"></span> Par</span>
+    <span><span class="swatch sw-bogey"></span> Bogey / dubbel (dubbel ram)</span>
+  </div>
+
+  <div class="confirm-inline" id="confirmNew">
+    <span>Starta ny runda? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelNewBtn" type="button">Avbryt</button>
+      <button class="btn-danger" id="confirmNewBtn" type="button">Ja, ny runda</button>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn-secondary" id="newRoundBtn" type="button">Ny runda</button>
+    <button class="btn-primary" id="saveHistoryBtn" type="button">Spara runda i historik</button>
+    <button class="btn-ghost" id="copyLogBtn" type="button">Kopiera logg</button>
+    <button class="btn-ghost" id="downloadLogBtn" type="button">Ladda ner .txt</button>
+  </div>
+
+  <details class="panel" id="logPanel">
+    <summary>Textlogg (förhandsvisning)</summary>
+    <div class="panel-body">
+      <pre class="log" id="logPreview"></pre>
+    </div>
+  </details>
+
+  <details class="panel" id="historyPanel">
+    <summary>Sparade rundor (<span id="historyCount">0</span>)</summary>
+    <div class="panel-body" id="historyBody">
+      <div class="empty-history">Inga sparade rundor än.</div>
+    </div>
+  </details>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  window.addEventListener('error', function (e) {
+    var box = document.getElementById('jsError');
+    if (box) {
+      box.style.display = 'block';
+      box.textContent = 'Ett fel uppstod: ' + e.message + ' (rad ' + e.lineno + ')';
+    }
+  });
+</script>
+<script>
+(function () {
+  var HOLES = 9;
+  var PAR = 3;
+  var MIN_PLAYERS = 1;
+  var MAX_PLAYERS = 4;
+  var STORAGE_ROUND = 'golf-current-round';
+  var STORAGE_HISTORY = 'golf-history';
+  var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
+
+  function todayISO() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function nowHM() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function playedCount(arr) { return arr.filter(function (v) { return v !== '' && v != null; }).length; }
+  function sumArr(arr) { return arr.reduce(function (a, b) { return a + (Number(b) || 0); }, 0); }
+  function diffLabel(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; }
+  function scoreClass(val) {
+    if (val === '' || val == null) return '';
+    var d = Number(val) - PAR;
+    if (d <= -2) return 'eagle';
+    if (d === -1) return 'birdie';
+    if (d === 0) return '';
+    if (d === 1) return 'bogey';
+    return 'dbogey';
+  }
+  function pad(s, n) { s = String(s); while (s.length < n) s += ' '; return s; }
+  function defaultRound() {
+    return {
+      course: '',
+      players: ['Spelare 1', 'Spelare 2'],
+      date: todayISO(),
+      startTime: nowHM(),
+      scores: [Array(HOLES).fill(''), Array(HOLES).fill('')]
+    };
+  }
+
+  function buildLog(round) {
+    var date = round.date, startTime = round.startTime, players = round.players, scores = round.scores;
+    var course = round.course || '';
+    var colWidth = 11;
+    var lines = [];
+    lines.push('GOLFRUNDA — 9 HÅL, PAR 3');
+    if (course) lines.push('Bana: ' + course);
+    lines.push('Datum: ' + date + '    Starttid: ' + startTime);
+    lines.push('');
+    var header = pad('HÅL', 8) + pad('PAR', 6);
+    players.forEach(function (name, i) { header += pad(name || ('Spelare ' + (i + 1)), colWidth); });
+    lines.push(header);
+    lines.push('-'.repeat(14 + colWidth * players.length));
+    for (var h = 0; h < HOLES; h++) {
+      var row = pad(h + 1, 8) + pad(PAR, 6);
+      players.forEach(function (name, p) {
+        var v = scores[p][h] === '' ? '-' : scores[p][h];
+        row += pad(v, colWidth);
+      });
+      lines.push(row);
+    }
+    lines.push('-'.repeat(14 + colWidth * players.length));
+    var totalRow = pad('TOTALT', 8) + pad(PAR * HOLES, 6);
+    var relRow = pad('VS PAR', 8) + pad('', 6);
+    players.forEach(function (name, p) {
+      var sum = sumArr(scores[p]);
+      var played = playedCount(scores[p]);
+      totalRow += pad(sum, colWidth);
+      relRow += pad(played ? diffLabel(sum - played * PAR) : '-', colWidth);
+    });
+    lines.push(totalRow);
+    lines.push(relRow);
+    lines.push('');
+    lines.push('Loggat: ' + new Date().toISOString().slice(0, 16).replace('T', ' '));
+    return lines.join('\n');
+  }
+
+  // ---- state ----
+  var state = defaultRound();
+  var roundHistory = [];
+  var focusedHole = 0;
+  var scoreInputs = []; // scoreInputs[p][h]
+
+  // ---- load persisted ----
+  try {
+    var savedRound = localStorage.getItem(STORAGE_ROUND);
+    if (savedRound) {
+      var r = JSON.parse(savedRound);
+      if (r.players && r.players.length) state.players = r.players;
+      if (r.date) state.date = r.date;
+      if (r.startTime) state.startTime = r.startTime;
+      if (r.scores && r.scores.length) state.scores = r.scores;
+      if (typeof r.course === 'string') state.course = r.course;
+    }
+  } catch (e) {}
+  try {
+    var savedHistory = localStorage.getItem(STORAGE_HISTORY);
+    if (savedHistory) roundHistory = JSON.parse(savedHistory);
+  } catch (e) {}
+
+  function persistRound() {
+    try { localStorage.setItem(STORAGE_ROUND, JSON.stringify(state)); } catch (e) {}
+  }
+  function persistHistory() {
+    try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(roundHistory)); } catch (e) {}
+  }
+
+  // ---- DOM refs ----
+  var dateInput = document.getElementById('date');
+  var timeInput = document.getElementById('time');
+  var courseInput = document.getElementById('course');
+  var courseStatus = document.getElementById('courseStatus');
+  var locateBtn = document.getElementById('locateBtn');
+  var playersFields = document.getElementById('playersFields');
+  var addPlayerBtn = document.getElementById('addPlayerBtn');
+  var headRow = document.getElementById('headRow');
+  var parRow = document.getElementById('parRow');
+  var playerRows = document.getElementById('playerRows');
+  var logPreview = document.getElementById('logPreview');
+  var historyBody = document.getElementById('historyBody');
+  var historyCount = document.getElementById('historyCount');
+  var toast = document.getElementById('toast');
+
+  // ---- build static hole columns in header + par row (constant regardless of player count) ----
+  for (var h = 0; h < HOLES; h++) {
+    var th = document.createElement('th');
+    th.innerHTML = '<span class="flag" data-hole="' + h + '"><span class="flag-pole"></span><span class="flag-cloth"></span></span>' + (h + 1);
+    headRow.insertBefore(th, headRow.lastElementChild);
+
+    var parTd = document.createElement('td');
+    parTd.textContent = PAR;
+    parRow.insertBefore(parTd, parRow.lastElementChild);
+  }
+
+  function buildOrder() {
+    var order = [];
+    for (var hh = 0; hh < HOLES; hh++) {
+      for (var pp = 0; pp < state.players.length; pp++) {
+        order.push({ p: pp, h: hh });
+      }
+    }
+    return order;
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 2200);
+  }
+
+  function updateFlag() {
+    document.querySelectorAll('.flag').forEach(function (f) {
+      f.classList.toggle('flag-active', Number(f.getAttribute('data-hole')) === focusedHole);
+    });
+  }
+
+  // ---- rebuild player name fields (meta card) ----
+  function renderPlayerFields() {
+    playersFields.innerHTML = '';
+    state.players.forEach(function (name, p) {
+      var row = document.createElement('div');
+      row.className = 'player-row-field';
+
+      var dot = document.createElement('span');
+      dot.className = 'swatch-dot';
+      dot.style.background = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      row.appendChild(dot);
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = name;
+      input.setAttribute('aria-label', 'Namn spelare ' + (p + 1));
+      input.addEventListener('input', function (e) {
+        state.players[p] = e.target.value;
+        renderNameCells();
+        render();
+      });
+      row.appendChild(input);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-player-btn';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', 'Ta bort spelare ' + (p + 1));
+      removeBtn.disabled = state.players.length <= MIN_PLAYERS;
+      removeBtn.addEventListener('click', function () {
+        if (state.players.length <= MIN_PLAYERS) return;
+        state.players.splice(p, 1);
+        state.scores.splice(p, 1);
+        rebuildPlayerRows();
+        renderPlayerFields();
+        render();
+        showToast('Spelare borttagen');
+      });
+      row.appendChild(removeBtn);
+
+      playersFields.appendChild(row);
+    });
+    addPlayerBtn.disabled = state.players.length >= MAX_PLAYERS;
+  }
+
+  function renderNameCells() {
+    state.players.forEach(function (name, p) {
+      var cell = document.getElementById('nameCell' + p);
+      if (cell) cell.textContent = name || ('Spelare ' + (p + 1));
+    });
+  }
+
+  // ---- rebuild player rows in the score table (structure only) ----
+  function rebuildPlayerRows() {
+    playerRows.innerHTML = '';
+    scoreInputs = [];
+    state.players.forEach(function (name, p) {
+      scoreInputs[p] = [];
+      var tr = document.createElement('tr');
+      tr.className = 'player-row';
+
+      var nameTd = document.createElement('td');
+      nameTd.className = 'name-cell';
+      nameTd.id = 'nameCell' + p;
+      nameTd.textContent = name || ('Spelare ' + (p + 1));
+      nameTd.style.color = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      tr.appendChild(nameTd);
+
+      for (var h = 0; h < HOLES; h++) {
+        (function (p, h) {
+          var td = document.createElement('td');
+          td.className = 'cell';
+          var input = document.createElement('input');
+          input.className = 'scoreinput';
+          input.type = 'text';
+          input.inputMode = 'numeric';
+          input.setAttribute('data-p', p);
+          input.setAttribute('data-h', h);
+          input.addEventListener('input', function (e) {
+            var clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+            state.scores[p][h] = clean;
+            render();
+          });
+          input.addEventListener('focus', function () { focusedHole = h; updateFlag(); });
+          input.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            var order = buildOrder();
+            var idx = order.findIndex(function (o) { return o.p === p && o.h === h; });
+            var next = order[idx + 1];
+            if (next) {
+              var el = scoreInputs[next.p][next.h];
+              if (el) { el.focus(); el.select(); }
+            } else {
+              input.blur();
+            }
+          });
+          td.appendChild(input);
+          tr.appendChild(td);
+          scoreInputs[p][h] = input;
+        })(p, h);
+      }
+
+      var totalTd = document.createElement('td');
+      totalTd.className = 'total-cell';
+      totalTd.id = 'totalCell' + p;
+      tr.appendChild(totalTd);
+
+      playerRows.appendChild(tr);
+    });
+  }
+
+  function render() {
+    dateInput.value = state.date;
+    timeInput.value = state.startTime;
+    if (document.activeElement !== courseInput) courseInput.value = state.course || '';
+
+    state.players.forEach(function (name, p) {
+      for (var h = 0; h < HOLES; h++) {
+        var val = state.scores[p][h];
+        var input = scoreInputs[p] && scoreInputs[p][h];
+        if (!input) return;
+        if (input.value !== val) input.value = val;
+        var cls = scoreClass(val);
+        input.parentElement.className = 'cell' + (cls ? ' ' + cls : '');
+      }
+      var sum = sumArr(state.scores[p]);
+      var played = playedCount(state.scores[p]);
+      var totalCell = document.getElementById('totalCell' + p);
+      if (totalCell) {
+        totalCell.innerHTML = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - played * PAR) + '</div>' : '');
+      }
+    });
+
+    logPreview.textContent = buildLog(state);
+    updateFlag();
+    persistRound();
+  }
+
+  function renderHistory() {
+    historyCount.textContent = roundHistory.length;
+    if (roundHistory.length === 0) {
+      historyBody.innerHTML = '<div class="empty-history">Inga sparade rundor än.</div>';
+      return;
+    }
+    historyBody.innerHTML = '';
+    roundHistory.forEach(function (r) {
+      var log = buildLog(r);
+      var namesLabel = r.players.map(function (n, i) { return n || ('Spelare ' + (i + 1)); }).join(' · ');
+      var courseLabel = r.course ? (r.course + ' — ') : '';
+      var div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML =
+        '<div class="history-head"><strong>' + r.date + ' · ' + r.startTime + '</strong><span>' +
+        courseLabel + namesLabel + '</span></div>' +
+        '<pre class="log">' + log.replace(/</g, '&lt;') + '</pre>' +
+        '<div class="panel-btns">' +
+        '<button class="btn-ghost-dark" data-action="copy" type="button">Kopiera</button>' +
+        '<button class="btn-ghost-dark" data-action="download" type="button">Ladda ner</button>' +
+        '<button class="btn-danger" data-action="delete" type="button">Ta bort</button>' +
+        '</div>';
+      div.querySelector('[data-action="copy"]').addEventListener('click', function () { copyText(log); });
+      div.querySelector('[data-action="download"]').addEventListener('click', function () {
+        downloadText(log, 'golfrunda_' + r.date + '.txt');
+      });
+      div.querySelector('[data-action="delete"]').addEventListener('click', function () {
+        roundHistory = roundHistory.filter(function (item) { return item.id !== r.id; });
+        persistHistory();
+        renderHistory();
+      });
+      historyBody.appendChild(div);
+    });
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast('Kopierat till urklipp');
+      }, function () { fallbackCopy(text); });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Kopierat till urklipp');
+    } catch (e) {
+      showToast('Kunde inte kopiera');
+    }
+  }
+  function downloadText(text, filename) {
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---- events ----
+  dateInput.addEventListener('change', function (e) { state.date = e.target.value; render(); });
+  timeInput.addEventListener('change', function (e) { state.startTime = e.target.value; render(); });
+  courseInput.addEventListener('input', function (e) { state.course = e.target.value; persistRound(); });
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function setCourseStatus(msg, type) {
+    courseStatus.textContent = msg;
+    courseStatus.className = 'course-status' + (type ? ' ' + type : '');
+  }
+
+  function getPosition() {
+    return new Promise(function (resolve, reject) {
+      if (!navigator.geolocation) {
+        reject(new Error('Platstjänster stöds inte i den här webbläsaren.'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 60000
+      });
+    });
+  }
+
+  function findNearestCourse() {
+    locateBtn.disabled = true;
+    locateBtn.classList.add('loading');
+    setCourseStatus('Hämtar din position …');
+
+    getPosition().then(function (pos) {
+      var lat = pos.coords.latitude, lon = pos.coords.longitude;
+      setCourseStatus('Söker golfbanor i närheten …');
+      var query = '[out:json][timeout:25];(' +
+        'node["leisure"="golf_course"](around:20000,' + lat + ',' + lon + ');' +
+        'way["leisure"="golf_course"](around:20000,' + lat + ',' + lon + ');' +
+        'relation["leisure"="golf_course"](around:20000,' + lat + ',' + lon + ');' +
+        ');out center tags;';
+      return fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: 'data=' + encodeURIComponent(query)
+      }).then(function (resp) {
+        if (!resp.ok) throw new Error('Uppslagstjänsten svarade inte (status ' + resp.status + ').');
+        return resp.json();
+      }).then(function (data) {
+        var candidates = (data.elements || [])
+          .filter(function (el) { return el.tags && el.tags.name; })
+          .map(function (el) {
+            var elat = el.lat != null ? el.lat : (el.center && el.center.lat);
+            var elon = el.lon != null ? el.lon : (el.center && el.center.lon);
+            if (elat == null || elon == null) return null;
+            return { name: el.tags.name, dist: haversineKm(lat, lon, elat, elon) };
+          })
+          .filter(Boolean)
+          .sort(function (a, b) { return a.dist - b.dist; });
+
+        if (candidates.length === 0) {
+          setCourseStatus('Ingen golfbana hittades inom 20 km. Fyll i manuellt.', 'error');
+          showToast('Ingen bana hittades i närheten');
+          return;
+        }
+        var nearest = candidates[0];
+        state.course = nearest.name;
+        render();
+        setCourseStatus('Hittade ' + nearest.name + ' (' + nearest.dist.toFixed(1) + ' km bort)', 'success');
+        showToast('Bana ifylld: ' + nearest.name);
+      });
+    }).catch(function (err) {
+      var msg = 'Kunde inte hämta position.';
+      if (err && err.code === 1) msg = 'Platsåtkomst nekad. Tillåt plats för Safari i Inställningar.';
+      else if (err && err.code === 2) msg = 'Positionen kunde inte fastställas.';
+      else if (err && err.code === 3) msg = 'Det tog för lång tid att hämta positionen.';
+      else if (err && err.message) msg = err.message;
+      setCourseStatus(msg, 'error');
+      showToast('Kunde inte hitta bana automatiskt');
+    }).finally(function () {
+      locateBtn.disabled = false;
+      locateBtn.classList.remove('loading');
+    });
+  }
+
+  locateBtn.addEventListener('click', findNearestCourse);
+
+  addPlayerBtn.addEventListener('click', function () {
+    if (state.players.length >= MAX_PLAYERS) return;
+    state.players.push('Spelare ' + (state.players.length + 1));
+    state.scores.push(Array(HOLES).fill(''));
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    showToast('Spelare tillagd');
+  });
+
+  document.getElementById('newRoundBtn').addEventListener('click', function () {
+    document.getElementById('confirmNew').classList.add('show');
+  });
+  document.getElementById('cancelNewBtn').addEventListener('click', function () {
+    document.getElementById('confirmNew').classList.remove('show');
+  });
+  document.getElementById('confirmNewBtn').addEventListener('click', function () {
+    state = defaultRound();
+    document.getElementById('confirmNew').classList.remove('show');
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    showToast('Ny runda startad');
+  });
+  document.getElementById('saveHistoryBtn').addEventListener('click', function () {
+    var id = state.date + '_' + state.startTime + '_' + Date.now();
+    var entry = {
+      id: id, date: state.date, startTime: state.startTime, course: state.course || '',
+      players: state.players.slice(),
+      scores: state.scores.map(function (arr) { return arr.slice(); }),
+      savedAt: new Date().toISOString()
+    };
+    roundHistory = [entry].concat(roundHistory).slice(0, 50);
+    persistHistory();
+    renderHistory();
+    showToast('Runda sparad i historik');
+  });
+  document.getElementById('copyLogBtn').addEventListener('click', function () { copyText(buildLog(state)); });
+  document.getElementById('downloadLogBtn').addEventListener('click', function () {
+    downloadText(buildLog(state), 'golfrunda_' + state.date + '.txt');
+  });
+
+  document.getElementById('parTotalLabel').textContent = PAR * HOLES;
+  document.getElementById('parTotalCell').textContent = PAR * HOLES;
+
+  rebuildPlayerRows();
+  renderPlayerFields();
+  render();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
