@@ -326,7 +326,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.4 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.5 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -490,6 +490,13 @@
     msgEl.textContent += (msgEl.textContent ? '\n\n' : '') + text;
   }
   window.addEventListener('error', function (e) {
+    // Browsers deliberately strip all detail (no filename/line/stack) for errors
+    // thrown by cross-origin code, e.g. browser extensions/content blockers
+    // injecting scripts into the page. Those are not actionable here and don't
+    // affect the app, so we skip showing them to avoid alarming the user.
+    var isSanitized = e.message === 'Script error.' && !e.filename && !(e.error && e.error.stack);
+    if (isSanitized) return;
+
     var detail = e.message || 'okänt fel';
     if (e.filename) detail += ' — ' + e.filename.split('/').pop() + ':' + e.lineno + ':' + e.colno;
     if (e.error && e.error.stack) detail += '\n' + e.error.stack;
