@@ -68,6 +68,43 @@
   }
   .fav-toggle-btn.active { background: #c9a227; color: #1c2b1c; border-color: #c9a227; }
 
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 25, 18, 0.72); z-index: 200;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-card {
+    width: 100%; max-width: 420px; background: #f5f0e1; border-radius: 12px;
+    padding: 22px 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 20px; color: #2b2b2b;
+    text-align: center; margin-bottom: 16px;
+  }
+  .summary-body { margin-bottom: 18px; }
+  .summary-warning {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8a2f24;
+    background: #f0e4c8; border-radius: 6px; padding: 8px 10px; margin-bottom: 12px;
+  }
+  .summary-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #e5dfc8;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row.summary-winner { background: rgba(201,162,39,0.15); border-radius: 6px; padding-left: 6px; }
+  .summary-place {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 13px; color: #6b6552; width: 20px;
+  }
+  .summary-name { font-family: 'Bitter', serif; font-weight: 700; font-size: 14px; color: #2b2b2b; flex: 1; }
+  .summary-score { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #2f5233; text-align: right; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button { flex: 1; }
+
+  .leader-banner {
+    width: 100%; max-width: 640px; background: #c9a227; color: #1c2b1c; border-radius: 8px;
+    padding: 9px 14px; margin-bottom: 12px; font-family: 'Bitter', serif; font-weight: 700; font-size: 13px;
+    align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .leader-icon { font-size: 15px; }
+
   .players-label {
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
     color: #8a2f24; text-transform: uppercase; margin-bottom: 8px;
@@ -175,6 +212,14 @@
   .stroke-dots span { width: 3px; height: 3px; border-radius: 50%; background: #8a2f24; display: block; }
   td.cell { position: relative; }
   table.score tbody tr.player-row td { border-bottom: 1px solid #e5dfc8; }
+  tr.netto-row td {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #2f5233;
+    border-bottom: 1px solid #e5dfc8; padding-top: 0; padding-bottom: 4px; background: #f0ece0;
+  }
+  tr.netto-row .netto-label {
+    font-size: 9.5px; letter-spacing: 0.06em; color: #2f5233; text-transform: uppercase; opacity: 0.85;
+  }
+  tr.netto-row .netto-total-cell { font-weight: 700; }
   .name-cell {
     font-family: 'Bitter', serif; font-weight: 700; font-size: 13px; color: #2b2b2b;
     text-align: left !important; padding-left: 6px !important; white-space: nowrap;
@@ -326,7 +371,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.6 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.7 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -388,6 +433,8 @@
     <button class="add-player-btn" id="addPlayerBtn" type="button">+ Lägg till spelare</button>
   </div>
 
+  <div id="leaderBanner" class="leader-banner" style="display:none;"></div>
+
   <div class="card">
     <table class="score">
       <thead>
@@ -431,6 +478,7 @@
   <div class="btnrow">
     <button class="btn-secondary" id="newRoundBtn" type="button">Ny runda</button>
     <button class="btn-primary" id="saveHistoryBtn" type="button">Spara runda i historik</button>
+    <button class="btn-ghost" id="shareBtn" type="button">Dela</button>
     <button class="btn-ghost" id="copyLogBtn" type="button">Kopiera logg</button>
     <button class="btn-ghost" id="downloadLogBtn" type="button">Ladda ner .txt</button>
   </div>
@@ -474,6 +522,17 @@
   </details>
 
   <div class="toast" id="toast"></div>
+
+  <div id="summaryModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-title">Match klar!</div>
+      <div id="summaryBody" class="summary-body"></div>
+      <div class="modal-btns">
+        <button class="btn-secondary" id="summaryCancelBtn" type="button">Avbryt</button>
+        <button class="btn-primary" id="summarySaveBtn" type="button">Spara &amp; stäng</button>
+      </div>
+    </div>
+  </div>
 
 <script>
   function showJsError(text) {
@@ -972,6 +1031,26 @@
       tr.appendChild(totalTd);
 
       playerRows.appendChild(tr);
+
+      // companion net-score row, shown only when this player has extra strokes
+      var nettoTr = document.createElement('tr');
+      nettoTr.className = 'netto-row';
+      nettoTr.id = 'nettoRow' + p;
+      nettoTr.style.display = 'none';
+      var nettoLabelTd = document.createElement('td');
+      nettoLabelTd.className = 'rowlabel netto-label';
+      nettoLabelTd.textContent = 'Netto';
+      nettoTr.appendChild(nettoLabelTd);
+      for (var hn = 0; hn < HOLES; hn++) {
+        var nettoTd = document.createElement('td');
+        nettoTd.id = 'nettoCell' + p + '_' + hn;
+        nettoTr.appendChild(nettoTd);
+      }
+      var nettoTotalTd = document.createElement('td');
+      nettoTotalTd.id = 'nettoTotalCell' + p;
+      nettoTotalTd.className = 'netto-total-cell';
+      nettoTr.appendChild(nettoTotalTd);
+      playerRows.appendChild(nettoTr);
     });
   }
 
@@ -1008,24 +1087,85 @@
       var sum = sumArr(state.scores[p]);
       var played = playedCount(state.scores[p]);
       var totalCell = document.getElementById('totalCell' + p);
+      var netParTotal = 0;
+      for (var h3 = 0; h3 < HOLES; h3++) {
+        if (state.scores[p][h3] !== '' && state.scores[p][h3] != null) {
+          netParTotal += netParForHole(state.strokeIndex, extra, h3);
+        }
+      }
       if (totalCell) {
         var html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - played * PAR) + '</div>' : '');
         if (extra > 0 && played > 0) {
-          var netParTotal = 0;
-          for (var h3 = 0; h3 < HOLES; h3++) {
-            if (state.scores[p][h3] !== '' && state.scores[p][h3] != null) {
-              netParTotal += netParForHole(state.strokeIndex, extra, h3);
-            }
-          }
           html += '<div class="relpar" style="color:#2f5233;">Netto ' + diffLabel(sum - netParTotal) + '</div>';
         }
         totalCell.innerHTML = html;
       }
+
+      var nettoRow = document.getElementById('nettoRow' + p);
+      if (nettoRow) {
+        if (extra > 0) {
+          nettoRow.style.display = '';
+          for (var h4 = 0; h4 < HOLES; h4++) {
+            var nc = document.getElementById('nettoCell' + p + '_' + h4);
+            if (!nc) continue;
+            var v4 = state.scores[p][h4];
+            if (v4 === '' || v4 == null) { nc.textContent = ''; continue; }
+            var np4 = netParForHole(state.strokeIndex, extra, h4);
+            nc.textContent = diffLabel(Number(v4) - np4);
+          }
+          var ntc = document.getElementById('nettoTotalCell' + p);
+          if (ntc) ntc.textContent = played > 0 ? diffLabel(sum - netParTotal) : '';
+        } else {
+          nettoRow.style.display = 'none';
+        }
+      }
     });
 
+    renderLeaderBanner();
     logPreview.textContent = buildLog(state);
     updateFlag();
     persistRound();
+  }
+
+  function renderLeaderBanner() {
+    var banner = document.getElementById('leaderBanner');
+    if (!banner) return;
+    var contenders = state.players.map(function (name, p) {
+      var extra = Number(state.extras[p]) || 0;
+      var played = playedCount(state.scores[p]);
+      if (played === 0) return null;
+      var sum = sumArr(state.scores[p]);
+      var diff;
+      if (extra > 0) {
+        var netParTotal = 0;
+        for (var h = 0; h < HOLES; h++) {
+          if (state.scores[p][h] !== '' && state.scores[p][h] != null) {
+            netParTotal += netParForHole(state.strokeIndex, extra, h);
+          }
+        }
+        diff = sum - netParTotal;
+      } else {
+        diff = sum - played * PAR;
+      }
+      return { name: name || ('Spelare ' + (p + 1)), played: played, diff: diff };
+    }).filter(Boolean);
+
+    if (contenders.length === 0) {
+      banner.style.display = 'none';
+      return;
+    }
+    var minDiff = Math.min.apply(null, contenders.map(function (c) { return c.diff; }));
+    var leaders = contenders.filter(function (c) { return c.diff === minDiff; });
+    var maxPlayed = Math.max.apply(null, contenders.map(function (c) { return c.played; }));
+
+    banner.style.display = 'flex';
+    if (leaders.length === contenders.length && contenders.length > 1) {
+      banner.innerHTML = '<span class="leader-icon">⛳</span> Jämnt läge — alla på ' + diffLabel(minDiff) + ' (igenom ' + maxPlayed + ')';
+    } else if (leaders.length > 1) {
+      banner.innerHTML = '<span class="leader-icon">🏆</span> Delad ledning: ' + leaders.map(function (l) { return l.name; }).join(' & ') + ' (' + diffLabel(minDiff) + ')';
+    } else {
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + leaders[0].name + ' leder (' + diffLabel(minDiff) + ', igenom ' + leaders[0].played + ')';
+    }
   }
 
   var courseFilterValue = '__all__';
@@ -1625,7 +1765,7 @@
     render();
     showToast('Ny runda startad');
   });
-  document.getElementById('saveHistoryBtn').addEventListener('click', function () {
+  function performSaveToHistory() {
     var id = state.date + '_' + state.startTime + '_' + Date.now();
     var entry = {
       id: id, date: state.date, startTime: state.startTime,
@@ -1641,10 +1781,192 @@
     persistHistory();
     renderHistory();
     showToast('Runda sparad i historik');
+  }
+
+  function computeStandings() {
+    return state.players.map(function (name, p) {
+      var extra = Number(state.extras[p]) || 0;
+      var played = playedCount(state.scores[p]);
+      var sum = sumArr(state.scores[p]);
+      var netParTotal = 0;
+      for (var h = 0; h < HOLES; h++) {
+        if (state.scores[p][h] !== '' && state.scores[p][h] != null) {
+          netParTotal += netParForHole(state.strokeIndex, extra, h);
+        }
+      }
+      var grossDiff = played > 0 ? sum - played * PAR : null;
+      var netDiff = played > 0 ? sum - netParTotal : null;
+      var rankMetric = played > 0 ? (extra > 0 ? netDiff : grossDiff) : null;
+      return {
+        name: name || ('Spelare ' + (p + 1)), played: played, sum: sum,
+        grossDiff: grossDiff, netDiff: netDiff, hasExtra: extra > 0, rankMetric: rankMetric
+      };
+    }).sort(function (a, b) {
+      if (a.rankMetric == null && b.rankMetric == null) return 0;
+      if (a.rankMetric == null) return 1;
+      if (b.rankMetric == null) return -1;
+      return a.rankMetric - b.rankMetric;
+    });
+  }
+
+  function openSummaryModal() {
+    var standings = computeStandings();
+    var body = document.getElementById('summaryBody');
+    body.innerHTML = '';
+    var allComplete = standings.every(function (s) { return s.played === HOLES; });
+    if (!allComplete) {
+      var warn = document.createElement('div');
+      warn.className = 'summary-warning';
+      warn.textContent = 'Obs: inte alla hål är ifyllda än — sparar det du hunnit mata in.';
+      body.appendChild(warn);
+    }
+    standings.forEach(function (s, i) {
+      var isWinner = i === 0 && s.played > 0;
+      var row = document.createElement('div');
+      row.className = 'summary-row' + (isWinner ? ' summary-winner' : '');
+      var place = s.played > 0 ? (i + 1) + '.' : '—';
+      var scoreText = s.played > 0
+        ? s.sum + ' slag (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  Netto ' + diffLabel(s.netDiff) : '')
+        : 'Inget resultat';
+      row.innerHTML =
+        '<span class="summary-place">' + place + '</span>' +
+        '<span class="summary-name">' + (isWinner ? '🏆 ' : '') + s.name + '</span>' +
+        '<span class="summary-score">' + scoreText + '</span>';
+      body.appendChild(row);
+    });
+    document.getElementById('summaryModal').style.display = 'flex';
+  }
+
+  document.getElementById('saveHistoryBtn').addEventListener('click', openSummaryModal);
+  document.getElementById('summaryCancelBtn').addEventListener('click', function () {
+    document.getElementById('summaryModal').style.display = 'none';
+  });
+  document.getElementById('summarySaveBtn').addEventListener('click', function () {
+    performSaveToHistory();
+    document.getElementById('summaryModal').style.display = 'none';
   });
   document.getElementById('copyLogBtn').addEventListener('click', function () { copyText(buildLog(state)); });
   document.getElementById('downloadLogBtn').addEventListener('click', function () {
     downloadText(buildLog(state), 'golfrunda_' + state.date + '.txt');
+  });
+
+  function drawScorecardImage() {
+    var canvas = document.createElement('canvas');
+    var dpr = window.devicePixelRatio || 1;
+    var W = 640;
+    var rowH = 30;
+    var players = state.players;
+    var H = 150 + players.length * (rowH + 14) + 40;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // background
+    ctx.fillStyle = '#f5f0e1';
+    ctx.fillRect(0, 0, W, H);
+
+    // header band
+    ctx.fillStyle = '#1c3e2d';
+    ctx.fillRect(0, 0, W, 92);
+    ctx.fillStyle = '#c9a227';
+    ctx.font = '700 10px IBM Plex Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('KLUBBRUNDA · 9 HÅL · PAR 3', 20, 24);
+    ctx.fillStyle = '#f7f4e9';
+    ctx.font = '800 22px Bitter, serif';
+    ctx.fillText(courseLabel(state) || 'Niohåls-scorekort', 20, 52);
+    ctx.fillStyle = '#a9c2ab';
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillText(state.date + '   ·   ' + state.startTime, 20, 74);
+
+    // hole header row
+    var colLabelW = 108;
+    var totColW = 92;
+    var holeColW = (W - 40 - colLabelW - totColW) / HOLES;
+    var y = 118;
+    ctx.font = '700 11px Bitter, serif';
+    ctx.fillStyle = '#2b2b2b';
+    ctx.textAlign = 'center';
+    for (var h = 0; h < HOLES; h++) {
+      ctx.fillText(String(h + 1), 20 + colLabelW + holeColW * h + holeColW / 2, y);
+    }
+    ctx.fillText('Tot', 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+    ctx.strokeStyle = '#2b2b2b';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(20, y + 8);
+    ctx.lineTo(W - 20, y + 8);
+    ctx.stroke();
+
+    // par row
+    y += 26;
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#6b6552';
+    ctx.textAlign = 'left';
+    ctx.fillText('Par', 20, y);
+    ctx.textAlign = 'center';
+    for (var h2 = 0; h2 < HOLES; h2++) {
+      ctx.fillText(String(PAR), 20 + colLabelW + holeColW * h2 + holeColW / 2, y);
+    }
+    ctx.fillText(String(PAR * HOLES), 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+
+    // player rows
+    players.forEach(function (name, p) {
+      y += rowH;
+      ctx.textAlign = 'left';
+      ctx.font = '700 13px Bitter, serif';
+      ctx.fillStyle = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      var label = name || ('Spelare ' + (p + 1));
+      ctx.fillText(label.length > 14 ? label.slice(0, 13) + '…' : label, 20, y);
+
+      ctx.font = '600 12px IBM Plex Mono, monospace';
+      ctx.fillStyle = '#2b2b2b';
+      ctx.textAlign = 'center';
+      for (var h3 = 0; h3 < HOLES; h3++) {
+        var v = state.scores[p][h3];
+        ctx.fillText(v === '' || v == null ? '–' : String(v), 20 + colLabelW + holeColW * h3 + holeColW / 2, y);
+      }
+      var sum = sumArr(state.scores[p]);
+      var played = playedCount(state.scores[p]);
+      ctx.font = '700 11px IBM Plex Mono, monospace';
+      var totalText = played > 0 ? sum + ' (' + diffLabel(sum - played * PAR) + ')' : '–';
+      ctx.fillText(totalText, 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+    });
+
+    // footer
+    ctx.font = '9.5px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#a9c2ab';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8a8060';
+    ctx.fillText('Skapat med Niohåls-scorekort', 20, H - 14);
+
+    return new Promise(function (resolve) {
+      canvas.toBlob(function (blob) { resolve(blob); }, 'image/png');
+    });
+  }
+
+  document.getElementById('shareBtn').addEventListener('click', function () {
+    var text = buildLog(state);
+    var title = 'Golfrunda' + (state.club ? ' – ' + state.club : '');
+
+    drawScorecardImage().then(function (blob) {
+      if (blob && navigator.canShare && navigator.share) {
+        var file = new File([blob], 'scorekort.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: title, text: text });
+        }
+      }
+      if (navigator.share) {
+        return navigator.share({ title: title, text: text });
+      }
+      copyText(text);
+      showToast('Delning stöds inte här — loggen kopierad istället');
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') return; // user cancelled the share sheet
+      copyText(text);
+      showToast('Kunde inte dela — loggen kopierad istället');
+    });
   });
 
   document.getElementById('parTotalLabel').textContent = PAR * HOLES;
