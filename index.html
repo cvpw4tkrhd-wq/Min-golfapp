@@ -326,7 +326,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.5 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.6 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -384,6 +384,7 @@
 
     <div class="players-label">Spelare (max 4)</div>
     <div id="playersFields"></div>
+    <datalist id="knownPlayers"></datalist>
     <button class="add-player-btn" id="addPlayerBtn" type="button">+ Lägg till spelare</button>
   </div>
 
@@ -523,6 +524,7 @@
   var STORAGE_ROUND = 'golf-current-round';
   var STORAGE_HISTORY = 'golf-history';
   var STORAGE_FAVORITES = 'golf-favorites';
+  var STORAGE_PROFILES = 'golf-player-profiles';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
 
   function todayISO() {
@@ -684,6 +686,11 @@
     var savedFavorites = localStorage.getItem(STORAGE_FAVORITES);
     if (savedFavorites) favorites = JSON.parse(savedFavorites);
   } catch (e) {}
+  var playerProfiles = {};
+  try {
+    var savedProfiles = localStorage.getItem(STORAGE_PROFILES);
+    if (savedProfiles) playerProfiles = JSON.parse(savedProfiles);
+  } catch (e) {}
 
   function persistRound() {
     try { localStorage.setItem(STORAGE_ROUND, JSON.stringify(state)); } catch (e) {}
@@ -693,6 +700,26 @@
   }
   function persistFavorites() {
     try { localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(favorites)); } catch (e) {}
+  }
+  function profileKey(name) { return (name || '').trim().toLowerCase(); }
+  function saveProfileForPlayer(name, handicap) {
+    var key = profileKey(name);
+    if (!key) return;
+    playerProfiles[key] = { displayName: (name || '').trim(), handicap: handicap || '', updatedAt: new Date().toISOString() };
+    try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
+  }
+  function lookupProfile(name) {
+    return playerProfiles[profileKey(name)] || null;
+  }
+  function renderKnownPlayersList() {
+    var list = document.getElementById('knownPlayers');
+    if (!list) return;
+    list.innerHTML = '';
+    Object.keys(playerProfiles).forEach(function (key) {
+      var opt = document.createElement('option');
+      opt.value = playerProfiles[key].displayName;
+      list.appendChild(opt);
+    });
   }
 
   // ---- DOM refs ----
@@ -792,11 +819,23 @@
       var input = document.createElement('input');
       input.type = 'text';
       input.value = name;
+      input.setAttribute('list', 'knownPlayers');
       input.setAttribute('aria-label', 'Namn spelare ' + (p + 1));
       input.addEventListener('input', function (e) {
         state.players[p] = e.target.value;
         renderNameCells();
         render();
+      });
+      input.addEventListener('blur', function (e) {
+        var profile = lookupProfile(e.target.value);
+        if (profile && !state.handicaps[p]) {
+          state.handicaps[p] = profile.handicap;
+          var hcpEl = document.getElementById('hcp' + p);
+          if (hcpEl) hcpEl.value = profile.handicap;
+          persistRound();
+          render();
+          if (profile.handicap) showToast('HCP ifyllt automatiskt för ' + profile.displayName);
+        }
       });
       row.appendChild(input);
 
@@ -838,6 +877,8 @@
       hcpInput.addEventListener('input', function (e) {
         state.handicaps[p] = e.target.value.replace(/[^0-9.,]/g, '');
         persistRound();
+        saveProfileForPlayer(state.players[p], state.handicaps[p]);
+        renderKnownPlayersList();
       });
       extraRow.appendChild(hcpInput);
 
@@ -1611,6 +1652,7 @@
 
   rebuildPlayerRows();
   renderPlayerFields();
+  renderKnownPlayersList();
   render();
   renderHistory();
 })();
