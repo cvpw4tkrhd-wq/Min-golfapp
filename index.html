@@ -326,7 +326,13 @@
 </head>
 <body>
 
-  <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap;"></div>
+  <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
+  <style>
+    .js-error-close {
+      position: absolute; top: 6px; right: 8px; background: transparent; border: none;
+      color: #fff2ee; font-size: 18px; line-height: 1; cursor: pointer; padding: 4px;
+    }
+  </style>
 
   <div class="header">
     <div class="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
@@ -467,13 +473,37 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  window.addEventListener('error', function (e) {
+  function showJsError(text) {
     var box = document.getElementById('jsError');
-    if (box) {
-      box.style.display = 'block';
-      box.textContent = 'Ett fel uppstod: ' + e.message + ' (rad ' + e.lineno + ')';
+    if (!box) return;
+    box.style.display = 'block';
+    var msgEl = box.querySelector('.js-error-msg');
+    if (!msgEl) {
+      box.innerHTML = '<span class="js-error-msg"></span><button type="button" class="js-error-close" aria-label="Stäng">×</button>';
+      msgEl = box.querySelector('.js-error-msg');
+      box.querySelector('.js-error-close').addEventListener('click', function () {
+        box.style.display = 'none';
+      });
     }
+    msgEl.textContent += (msgEl.textContent ? '\n\n' : '') + text;
+  }
+  window.addEventListener('error', function (e) {
+    var detail = e.message || 'okänt fel';
+    if (e.filename) detail += ' — ' + e.filename.split('/').pop() + ':' + e.lineno + ':' + e.colno;
+    if (e.error && e.error.stack) detail += '\n' + e.error.stack;
+    showJsError('JS-fel: ' + detail);
   });
+  window.addEventListener('unhandledrejection', function (e) {
+    var reason = e.reason;
+    var detail = (reason && (reason.message || reason.toString())) || 'okänt promise-fel';
+    if (reason && reason.stack) detail += '\n' + reason.stack;
+    showJsError('Ohanterat promise-fel: ' + detail);
+  });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('error', function (e) {
+      showJsError('Service worker-fel: ' + (e.message || e));
+    });
+  }
 </script>
 <script>
 (function () {
