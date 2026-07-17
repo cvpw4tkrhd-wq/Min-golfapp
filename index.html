@@ -371,7 +371,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.7 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.8 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -475,8 +475,17 @@
     </div>
   </div>
 
+  <div class="confirm-inline" id="confirmClear">
+    <span>Rensa alla inmatade slag? Spelare, klubb och HCP behålls — bara resultaten nollställs.</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelClearBtn" type="button">Avbryt</button>
+      <button class="btn-danger" id="confirmClearBtn" type="button">Ja, rensa</button>
+    </div>
+  </div>
+
   <div class="btnrow">
     <button class="btn-secondary" id="newRoundBtn" type="button">Ny runda</button>
+    <button class="btn-secondary" id="clearScoresBtn" type="button">Rensa resultat</button>
     <button class="btn-primary" id="saveHistoryBtn" type="button">Spara runda i historik</button>
     <button class="btn-ghost" id="shareBtn" type="button">Dela</button>
     <button class="btn-ghost" id="copyLogBtn" type="button">Kopiera logg</button>
@@ -1160,11 +1169,11 @@
 
     banner.style.display = 'flex';
     if (leaders.length === contenders.length && contenders.length > 1) {
-      banner.innerHTML = '<span class="leader-icon">⛳</span> Jämnt läge — alla på ' + diffLabel(minDiff) + ' (igenom ' + maxPlayed + ')';
+      banner.innerHTML = '<span class="leader-icon">⛳</span> Jämnt läge — alla på ' + diffLabel(minDiff) + ' (efter ' + maxPlayed + ' hål)';
     } else if (leaders.length > 1) {
       banner.innerHTML = '<span class="leader-icon">🏆</span> Delad ledning: ' + leaders.map(function (l) { return l.name; }).join(' & ') + ' (' + diffLabel(minDiff) + ')';
     } else {
-      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + leaders[0].name + ' leder (' + diffLabel(minDiff) + ', igenom ' + leaders[0].played + ')';
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + leaders[0].name + ' leder (' + diffLabel(minDiff) + ', efter ' + leaders[0].played + ' hål)';
     }
   }
 
@@ -1750,6 +1759,7 @@
 
   document.getElementById('newRoundBtn').addEventListener('click', function () {
     document.getElementById('confirmNew').classList.add('show');
+    document.getElementById('confirmClear').classList.remove('show');
   });
   document.getElementById('cancelNewBtn').addEventListener('click', function () {
     document.getElementById('confirmNew').classList.remove('show');
@@ -1764,6 +1774,20 @@
     renderPlayerFields();
     render();
     showToast('Ny runda startad');
+  });
+
+  document.getElementById('clearScoresBtn').addEventListener('click', function () {
+    document.getElementById('confirmClear').classList.add('show');
+    document.getElementById('confirmNew').classList.remove('show');
+  });
+  document.getElementById('cancelClearBtn').addEventListener('click', function () {
+    document.getElementById('confirmClear').classList.remove('show');
+  });
+  document.getElementById('confirmClearBtn').addEventListener('click', function () {
+    state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+    document.getElementById('confirmClear').classList.remove('show');
+    render();
+    showToast('Resultat rensade');
   });
   function performSaveToHistory() {
     var id = state.date + '_' + state.startTime + '_' + Date.now();
