@@ -358,7 +358,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.12 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.13 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -1486,19 +1486,36 @@
     });
   }
 
+  var OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter'
+  ];
+
+  function fetchOverpass(query, endpointIndex) {
+    endpointIndex = endpointIndex || 0;
+    var url = OVERPASS_ENDPOINTS[endpointIndex];
+    return fetch(url, {
+      method: 'POST',
+      body: 'data=' + encodeURIComponent(query)
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error('status ' + resp.status);
+      return resp.json();
+    }).catch(function (err) {
+      var nextIndex = endpointIndex + 1;
+      if (nextIndex < OVERPASS_ENDPOINTS.length) {
+        return fetchOverpass(query, nextIndex);
+      }
+      throw new Error('Uppslagstjänsten svarade inte (' + (err && err.message ? err.message : 'nätverksfel') + ').');
+    });
+  }
+
   function overpassGolfCourses(lat, lon, radiusMeters) {
-    var query = '[out:json][timeout:50];(' +
+    var query = '[out:json][timeout:20];(' +
       'node["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
       'way["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
       'relation["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
       ');out center tags;';
-    return fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: 'data=' + encodeURIComponent(query)
-    }).then(function (resp) {
-      if (!resp.ok) throw new Error('Uppslagstjänsten svarade inte (status ' + resp.status + ').');
-      return resp.json();
-    }).then(function (data) {
+    return fetchOverpass(query).then(function (data) {
       return (data.elements || [])
         .filter(function (el) { return el.tags && el.tags.name; })
         .map(function (el) {
