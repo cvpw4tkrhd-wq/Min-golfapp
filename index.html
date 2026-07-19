@@ -55,19 +55,6 @@
   }
   .field input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
 
-  .favorites-field { margin-bottom: 14px; }
-  .favorites-row { display: flex; gap: 8px; }
-  .favorites-row select {
-    flex: 1; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
-    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
-  }
-  .fav-toggle-btn {
-    width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; border: 1px solid #d8d0b8;
-    background: #fffdf7; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: #c9a227;
-  }
-  .fav-toggle-btn.active { background: #c9a227; color: #1c2b1c; border-color: #c9a227; }
-
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(15, 25, 18, 0.72); z-index: 200;
     align-items: center; justify-content: center; padding: 20px;
@@ -131,14 +118,6 @@
   .club-results {
     width: 100%; margin-top: 8px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
     background: #fffdf7; border: 1px solid #c9a227; border-radius: 6px; padding: 8px 9px;
-  }
-  #courseVariant {
-    width: 100%; font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
-    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
-  }
-  #courseVariantCustom {
-    width: 100%; margin-top: 8px; font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
-    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
   }
   .player-row-field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .player-row-field .swatch-dot {
@@ -379,7 +358,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.10 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.11 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -415,24 +394,6 @@
       </div>
       <div class="course-status" id="courseStatus"></div>
       <select id="clubResults" class="club-results" style="display:none;"></select>
-    </div>
-
-    <div class="field course-field">
-      <label for="courseVariant">Bana</label>
-      <select id="courseVariant">
-        <option value="">— Ej valt —</option>
-        <option value="__custom__">Annan (skriv in manuellt)</option>
-      </select>
-      <input id="courseVariantCustom" type="text" placeholder="T.ex. Gula slingan" style="display:none;" />
-    </div>
-
-    <div class="field course-field favorites-field">
-      <div class="favorites-row">
-        <select id="favoritesSelect">
-          <option value="">☆ Favoriter …</option>
-        </select>
-        <button class="fav-toggle-btn" id="favToggleBtn" type="button" title="Spara/ta bort som favorit">☆</button>
-      </div>
     </div>
 
     <div class="players-label">Spelare (max 4)</div>
@@ -599,7 +560,6 @@
   var MAX_PLAYERS = 4;
   var STORAGE_ROUND = 'golf-current-round';
   var STORAGE_HISTORY = 'golf-history';
-  var STORAGE_FAVORITES = 'golf-favorites';
   var STORAGE_PROFILES = 'golf-player-profiles';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
 
@@ -652,7 +612,6 @@
   function defaultRound() {
     return {
       club: '',
-      courseVariant: '',
       players: ['Spelare 1', 'Spelare 2'],
       handicaps: ['', ''],
       extras: ['', ''],
@@ -747,7 +706,6 @@
       if (r.scores && r.scores.length) state.scores = r.scores;
       if (typeof r.club === 'string') state.club = r.club;
       else if (typeof r.course === 'string') state.club = r.course;
-      if (typeof r.courseVariant === 'string') state.courseVariant = r.courseVariant;
       state.handicaps = (r.handicaps && r.handicaps.length === state.players.length) ? r.handicaps : state.players.map(function () { return ''; });
       state.extras = (r.extras && r.extras.length === state.players.length) ? r.extras : state.players.map(function () { return ''; });
       state.strokeIndex = (r.strokeIndex && r.strokeIndex.length === HOLES) ? r.strokeIndex : defaultStrokeIndex();
@@ -756,11 +714,6 @@
   try {
     var savedHistory = localStorage.getItem(STORAGE_HISTORY);
     if (savedHistory) roundHistory = JSON.parse(savedHistory);
-  } catch (e) {}
-  var favorites = [];
-  try {
-    var savedFavorites = localStorage.getItem(STORAGE_FAVORITES);
-    if (savedFavorites) favorites = JSON.parse(savedFavorites);
   } catch (e) {}
   var playerProfiles = {};
   try {
@@ -773,9 +726,6 @@
   }
   function persistHistory() {
     try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(roundHistory)); } catch (e) {}
-  }
-  function persistFavorites() {
-    try { localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(favorites)); } catch (e) {}
   }
   function profileKey(name) { return (name || '').trim().toLowerCase(); }
   function saveProfileForPlayer(name, handicap) {
@@ -805,8 +755,6 @@
   var clubResultsSelect = document.getElementById('clubResults');
   var courseStatus = document.getElementById('courseStatus');
   var locateBtn = document.getElementById('locateBtn');
-  var courseVariantSelect = document.getElementById('courseVariant');
-  var courseVariantCustom = document.getElementById('courseVariantCustom');
   var playersFields = document.getElementById('playersFields');
   var addPlayerBtn = document.getElementById('addPlayerBtn');
   var headRow = document.getElementById('headRow');
@@ -818,8 +766,6 @@
   var historyCount = document.getElementById('historyCount');
   var historyFilterRow = document.getElementById('historyFilterRow');
   var courseFilter = document.getElementById('courseFilter');
-  var favoritesSelect = document.getElementById('favoritesSelect');
-  var favToggleBtn = document.getElementById('favToggleBtn');
   var statsEmpty = document.getElementById('statsEmpty');
   var statsContent = document.getElementById('statsContent');
   var trendChart = document.getElementById('trendChart');
@@ -1075,8 +1021,6 @@
     dateInput.value = state.date;
     timeInput.value = state.startTime;
     if (document.activeElement !== clubInput) clubInput.value = state.club || '';
-    syncCourseVariantUI();
-    renderFavorites();
 
     for (var hi = 0; hi < HOLES; hi++) {
       if (hcpIndexInputs[hi] && document.activeElement !== hcpIndexInputs[hi]) {
@@ -1513,103 +1457,6 @@
     persistRound();
   });
 
-  function syncCourseVariantUI() {
-    var val = state.courseVariant || '';
-    var hasOption = Array.prototype.some.call(courseVariantSelect.options, function (o) { return o.value === val; });
-    if (val && !hasOption) {
-      courseVariantSelect.value = '__custom__';
-      courseVariantCustom.style.display = 'block';
-      if (document.activeElement !== courseVariantCustom) courseVariantCustom.value = val;
-    } else {
-      courseVariantSelect.value = val;
-      courseVariantCustom.style.display = 'none';
-    }
-  }
-
-  function setCourseVariantOptions(names) {
-    courseVariantSelect.innerHTML = '';
-    var blank = document.createElement('option');
-    blank.value = '';
-    blank.textContent = '— Ej valt —';
-    courseVariantSelect.appendChild(blank);
-    names.forEach(function (n) {
-      var opt = document.createElement('option');
-      opt.value = n;
-      opt.textContent = n;
-      courseVariantSelect.appendChild(opt);
-    });
-    var custom = document.createElement('option');
-    custom.value = '__custom__';
-    custom.textContent = 'Annan (skriv in manuellt)';
-    courseVariantSelect.appendChild(custom);
-    syncCourseVariantUI();
-  }
-
-  courseVariantSelect.addEventListener('change', function (e) {
-    if (e.target.value === '__custom__') {
-      courseVariantCustom.style.display = 'block';
-      courseVariantCustom.focus();
-      state.courseVariant = courseVariantCustom.value || '';
-    } else {
-      courseVariantCustom.style.display = 'none';
-      state.courseVariant = e.target.value;
-    }
-    persistRound();
-  });
-  courseVariantCustom.addEventListener('input', function (e) {
-    state.courseVariant = e.target.value;
-    persistRound();
-    renderFavorites();
-  });
-
-  function favKey(club, variant) { return (club || '') + '|' + (variant || ''); }
-
-  function renderFavorites() {
-    favoritesSelect.innerHTML = '';
-    var placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = favorites.length ? '☆ Favoriter …' : '☆ Inga favoriter sparade än';
-    favoritesSelect.appendChild(placeholder);
-    favorites.forEach(function (f, i) {
-      var opt = document.createElement('option');
-      opt.value = String(i);
-      opt.textContent = f.club + (f.courseVariant ? ' — ' + f.courseVariant : '');
-      favoritesSelect.appendChild(opt);
-    });
-    var isFav = favorites.some(function (f) { return favKey(f.club, f.courseVariant) === favKey(state.club, state.courseVariant); });
-    favToggleBtn.classList.toggle('active', isFav);
-    favToggleBtn.textContent = isFav ? '★' : '☆';
-    favToggleBtn.disabled = !state.club;
-  }
-
-  favToggleBtn.addEventListener('click', function () {
-    if (!state.club) return;
-    var key = favKey(state.club, state.courseVariant);
-    var idx = favorites.findIndex(function (f) { return favKey(f.club, f.courseVariant) === key; });
-    if (idx !== -1) {
-      favorites.splice(idx, 1);
-      showToast('Borttagen från favoriter');
-    } else {
-      favorites.push({ club: state.club, courseVariant: state.courseVariant || '' });
-      showToast('Sparad som favorit');
-    }
-    persistFavorites();
-    renderFavorites();
-  });
-
-  favoritesSelect.addEventListener('change', function (e) {
-    if (e.target.value === '') return;
-    var fav = favorites[Number(e.target.value)];
-    if (!fav) return;
-    state.club = fav.club;
-    state.courseVariant = fav.courseVariant || '';
-    setCourseVariantOptions([]);
-    render();
-    renderFavorites();
-    setCourseStatus('Favorit ifylld: ' + fav.club, 'success');
-    showToast('Bana ifylld från favoriter');
-  });
-
   function haversineKm(lat1, lon1, lat2, lon2) {
     var R = 6371;
     var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -1726,20 +1573,6 @@
     render();
     setCourseStatus('Vald klubb: ' + chosen.name, 'success');
     showToast('Klubb ifylld: ' + chosen.name);
-
-    // look for sibling courses close to the same spot
-    overpassGolfCourses(chosen.lat, chosen.lon, 1500).then(function (siblings) {
-      var names = Array.from(new Set(siblings.map(function (s) { return s.name; })));
-      if (names.length > 1) {
-        setCourseVariantOptions(names);
-        setCourseStatus(names.length + ' banor hittade vid ' + chosen.name + ' — välj under "Bana"', 'success');
-      } else {
-        setCourseVariantOptions([]);
-      }
-    }).catch(function () {
-      // silent: sibling lookup is best-effort only
-      setCourseVariantOptions([]);
-    });
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
@@ -1776,7 +1609,6 @@
     state = defaultRound();
     document.getElementById('confirmNew').classList.remove('show');
     clubResultsSelect.style.display = 'none';
-    setCourseVariantOptions([]);
     setCourseStatus('', '');
     rebuildPlayerRows();
     renderPlayerFields();
@@ -1801,7 +1633,7 @@
     var id = state.date + '_' + state.startTime + '_' + Date.now();
     var entry = {
       id: id, date: state.date, startTime: state.startTime,
-      club: state.club || '', courseVariant: state.courseVariant || '',
+      club: state.club || '',
       players: state.players.slice(),
       handicaps: state.handicaps.slice(),
       extras: state.extras.slice(),
