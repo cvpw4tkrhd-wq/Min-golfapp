@@ -358,7 +358,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.13 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.14 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -731,7 +731,9 @@
   function saveProfileForPlayer(name, handicap) {
     var key = profileKey(name);
     if (!key) return;
-    playerProfiles[key] = { displayName: (name || '').trim(), handicap: handicap || '', updatedAt: new Date().toISOString() };
+    var existing = playerProfiles[key];
+    var hcpToStore = handicap || (existing ? existing.handicap : '') || '';
+    playerProfiles[key] = { displayName: (name || '').trim(), handicap: hcpToStore, updatedAt: new Date().toISOString() };
     try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
   }
   function lookupProfile(name) {
@@ -849,7 +851,8 @@
         render();
       });
       input.addEventListener('blur', function (e) {
-        var profile = lookupProfile(e.target.value);
+        var typedName = e.target.value;
+        var profile = lookupProfile(typedName);
         if (profile && !state.handicaps[p]) {
           state.handicaps[p] = profile.handicap;
           var hcpEl = document.getElementById('hcp' + p);
@@ -858,6 +861,10 @@
           render();
           if (profile.handicap) showToast('HCP ifyllt automatiskt för ' + profile.displayName);
         }
+        // remember the name itself even if no HCP was entered, so it shows up
+        // as an autocomplete suggestion and can be recognized next round
+        saveProfileForPlayer(typedName, state.handicaps[p]);
+        renderKnownPlayersList();
       });
       row.appendChild(input);
 
