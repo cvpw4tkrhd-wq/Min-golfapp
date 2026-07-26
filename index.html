@@ -358,7 +358,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.15 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.17 · 2026-07-17</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -420,7 +420,7 @@
           <td id="parTotalCell">27</td>
         </tr>
         <tr class="hcp-row" id="hcpRow">
-          <td class="rowlabel">Index<span class="hcp-info" title="Hålets svårighetsordning (1 = hål där slag delas ut först). Ändra vid behov efter din banas verkliga index.">?</span></td>
+          <td class="rowlabel">Index<span class="hcp-info" title="Skriv in din banas egna slagindex-siffror rakt av (t.ex. 1-18 eller udda tal) — appen räknar själv ut vilket hål som är svårast.">?</span></td>
           <!-- stroke index cells injected -->
           <td></td>
         </tr>
@@ -563,6 +563,20 @@
   var STORAGE_PROFILES = 'golf-player-profiles';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
 
+  // Known real stroke-index (svårighetsordning 1-9, ej klubbens egna INDX-nummer)
+  // for specific 9-hole courses, keyed by a lowercase/trimmed club-name fragment.
+  var KNOWN_COURSE_STROKE_INDEX = [
+    { match: 'albatross', name: 'Albatross GK (Eaglekorten)', strokeIndex: [13, 11, 5, 1, 15, 9, 7, 17, 3] }
+  ];
+  function lookupCourseStrokeIndex(clubName) {
+    var key = (clubName || '').trim().toLowerCase();
+    if (!key) return null;
+    for (var i = 0; i < KNOWN_COURSE_STROKE_INDEX.length; i++) {
+      if (key.indexOf(KNOWN_COURSE_STROKE_INDEX[i].match) !== -1) return KNOWN_COURSE_STROKE_INDEX[i];
+    }
+    return null;
+  }
+
   function todayISO() {
     var d = new Date();
     var m = String(d.getMonth() + 1).padStart(2, '0');
@@ -581,16 +595,28 @@
     for (var i = 0; i < HOLES; i++) arr.push(i + 1);
     return arr;
   }
-  function strokesOnHole(extra, indexRank) {
+  function strokesOnHole(extra, rank) {
     extra = Number(extra) || 0;
     if (extra <= 0) return 0;
     var base = Math.floor(extra / HOLES);
     var remainder = extra % HOLES;
-    return base + (Number(indexRank) <= remainder ? 1 : 0);
+    return base + (Number(rank) <= remainder ? 1 : 0);
+  }
+  // Converts whatever numbers are in the "Index" row (the club's own INDX
+  // column — could be 1-9, or 1-18/odd-only, or anything) into a relative
+  // difficulty rank 1..HOLES, since only the relative order matters for
+  // allocating strokes. Ties broken by hole order.
+  function computeStrokeRanks(strokeIndexArr) {
+    var arr = strokeIndexArr && strokeIndexArr.length === HOLES ? strokeIndexArr : defaultStrokeIndex();
+    var withIdx = arr.map(function (v, h) { return { h: h, v: (v === '' || v == null) ? (h + 1) : Number(v) }; });
+    withIdx.sort(function (a, b) { return a.v - b.v || a.h - b.h; });
+    var ranks = [];
+    withIdx.forEach(function (item, i) { ranks[item.h] = i + 1; });
+    return ranks;
   }
   function netParForHole(strokeIndexArr, extra, h) {
-    var idx = (strokeIndexArr && strokeIndexArr[h]) || (h + 1);
-    return PAR + strokesOnHole(extra, idx);
+    var ranks = computeStrokeRanks(strokeIndexArr);
+    return PAR + strokesOnHole(extra, ranks[h]);
   }
   function scoreClass(val, np) {
     if (val === '' || val == null) return '';
@@ -629,6 +655,7 @@
     var extras = round.extras || [];
     var handicaps = round.handicaps || [];
     var hasHcp = extras.some(function (e) { return Number(e) > 0; });
+    var ranks = computeStrokeRanks(strokeIndex);
     var colWidth = 11;
     var lines = [];
     lines.push('GOLFRUNDA — 9 HÅL, PAR 3');
@@ -652,7 +679,7 @@
       var row = pad(h + 1, 8) + pad(PAR, 6) + (hasHcp ? pad(strokeIndex[h], idxColWidth) : '');
       players.forEach(function (name, p) {
         var v = scores[p][h] === '' ? '-' : scores[p][h];
-        var strokes = hasHcp ? strokesOnHole(extras[p], strokeIndex[h]) : 0;
+        var strokes = hasHcp ? strokesOnHole(extras[p], ranks[h]) : 0;
         if (strokes > 0 && v !== '-') v += '*'.repeat(strokes);
         row += pad(v, colWidth);
       });
@@ -1036,6 +1063,7 @@
       }
     }
 
+    var ranks = computeStrokeRanks(state.strokeIndex);
     state.players.forEach(function (name, p) {
       var extra = Number(state.extras[p]) || 0;
       for (var h = 0; h < HOLES; h++) {
@@ -1046,7 +1074,7 @@
         var np = netParForHole(state.strokeIndex, extra, h);
         var cls = scoreClass(val, np);
         input.parentElement.className = 'cell' + (cls ? ' ' + cls : '');
-        var strokes = strokesOnHole(extra, state.strokeIndex[h] || (h + 1));
+        var strokes = strokesOnHole(extra, ranks[h]);
         var dotsSpan = document.getElementById('dots' + p + '_' + h);
         if (dotsSpan) {
           dotsSpan.innerHTML = '';
@@ -1464,6 +1492,15 @@
     clubResultsSelect.style.display = 'none';
     persistRound();
   });
+  clubInput.addEventListener('blur', function (e) {
+    var known = lookupCourseStrokeIndex(e.target.value);
+    if (known) {
+      state.strokeIndex = known.strokeIndex.slice();
+      persistRound();
+      render();
+      showToast('Slagindex ifyllt för ' + known.name);
+    }
+  });
 
   function haversineKm(lat1, lon1, lat2, lon2) {
     var R = 6371;
@@ -1595,9 +1632,11 @@
     var chosen = lastClubResults[Number(idx)];
     if (!chosen) return;
     state.club = chosen.name;
+    var known = lookupCourseStrokeIndex(chosen.name);
+    if (known) state.strokeIndex = known.strokeIndex.slice();
     render();
     setCourseStatus('Vald klubb: ' + chosen.name, 'success');
-    showToast('Klubb ifylld: ' + chosen.name);
+    showToast(known ? 'Klubb & slagindex ifyllt: ' + chosen.name : 'Klubb ifylld: ' + chosen.name);
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
