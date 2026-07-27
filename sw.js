@@ -1,13 +1,14 @@
 // Enkel "app shell" cache för offline-bruk.
 // Höj CACHE_NAME (t.ex. till 'golf-scorekort-v2') när du gör en större uppdatering
 // av index.html för att tvinga fram en ny cache.
-var CACHE_NAME = 'golf-scorekort-v15';
+var CACHE_NAME = 'golf-scorekort-v19';
 var APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './courses.json'
 ];
 
 self.addEventListener('install', function (event) {

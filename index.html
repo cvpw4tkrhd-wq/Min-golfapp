@@ -176,7 +176,7 @@
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; text-align: center;
     margin-top: 8px;
   }
-  .player-extra-row { display: flex; align-items: center; gap: 6px; margin: -2px 0 8px 18px; }
+  .player-extra-row { display: flex; align-items: center; gap: 6px; margin: -2px 0 8px 18px; flex-wrap: wrap; }
   .player-extra-row label {
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; letter-spacing: 0.04em;
   }
@@ -184,6 +184,15 @@
     width: 46px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
     background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 5px; padding: 5px 6px;
   }
+  .gender-select {
+    width: 42px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 5px; padding: 5px 4px;
+  }
+  .calc-btn {
+    width: 30px; height: 30px; flex-shrink: 0; border-radius: 5px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .calc-btn:active { transform: scale(0.95); }
   .stroke-dots {
     position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 1.5px; pointer-events: none;
@@ -358,7 +367,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.17 · 2026-07-17</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.21 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -563,18 +572,48 @@
   var STORAGE_PROFILES = 'golf-player-profiles';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
 
-  // Known real stroke-index (svårighetsordning 1-9, ej klubbens egna INDX-nummer)
-  // for specific 9-hole courses, keyed by a lowercase/trimmed club-name fragment.
-  var KNOWN_COURSE_STROKE_INDEX = [
-    { match: 'albatross', name: 'Albatross GK (Eaglekorten)', strokeIndex: [13, 11, 5, 1, 15, 9, 7, 17, 3] }
-  ];
-  function lookupCourseStrokeIndex(clubName) {
+  // Course/slope data now lives in courses.json (loaded below) instead of being
+  // hardcoded here, so the club database can grow without touching app logic.
+  var KNOWN_COURSES = [];
+  var knownCoursesLoaded = false;
+
+  function loadCourseDatabase() {
+    return fetch('courses.json')
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (data) {
+        if (data && Array.isArray(data.courses)) {
+          KNOWN_COURSES = data.courses;
+          knownCoursesLoaded = true;
+        }
+      })
+      .catch(function () {
+        // offline on first load with nothing cached yet — calculator features
+        // just stay unavailable until the file can be fetched.
+      });
+  }
+
+  function findKnownCourse(clubName) {
     var key = (clubName || '').trim().toLowerCase();
     if (!key) return null;
-    for (var i = 0; i < KNOWN_COURSE_STROKE_INDEX.length; i++) {
-      if (key.indexOf(KNOWN_COURSE_STROKE_INDEX[i].match) !== -1) return KNOWN_COURSE_STROKE_INDEX[i];
+    for (var i = 0; i < KNOWN_COURSES.length; i++) {
+      if (key.indexOf(KNOWN_COURSES[i].match) !== -1) return KNOWN_COURSES[i];
     }
     return null;
+  }
+  function lookupCourseStrokeIndex(clubName) {
+    var course = findKnownCourse(clubName);
+    return (course && course.strokeIndex) ? course : null;
+  }
+  function lookupSlopeTable(clubName) {
+    var course = findKnownCourse(clubName);
+    if (!course || !course.slope) return null;
+    return { name: course.name, men: course.slope.men, women: course.slope.women };
+  }
+  function computeCourseHandicap(hcp, table) {
+    var n = Number(String(hcp).replace(',', '.'));
+    if (!isFinite(n)) return null;
+    var raw = n * (table.slope / 113) + (table.cr - table.par);
+    return Math.max(0, Math.round(raw));
   }
 
   function todayISO() {
@@ -641,6 +680,7 @@
       players: ['', ''],
       handicaps: ['', ''],
       extras: ['', ''],
+      genders: ['', ''],
       strokeIndex: defaultStrokeIndex(),
       date: todayISO(),
       startTime: nowHM(),
@@ -735,6 +775,7 @@
       else if (typeof r.course === 'string') state.club = r.course;
       state.handicaps = (r.handicaps && r.handicaps.length === state.players.length) ? r.handicaps : state.players.map(function () { return ''; });
       state.extras = (r.extras && r.extras.length === state.players.length) ? r.extras : state.players.map(function () { return ''; });
+      state.genders = (r.genders && r.genders.length === state.players.length) ? r.genders : state.players.map(function () { return ''; });
       state.strokeIndex = (r.strokeIndex && r.strokeIndex.length === HOLES) ? r.strokeIndex : defaultStrokeIndex();
     }
   } catch (e) {}
@@ -908,6 +949,7 @@
         state.scores.splice(p, 1);
         state.handicaps.splice(p, 1);
         state.extras.splice(p, 1);
+        state.genders.splice(p, 1);
         rebuildPlayerRows();
         renderPlayerFields();
         render();
@@ -939,6 +981,28 @@
       });
       extraRow.appendChild(hcpInput);
 
+      var genderLabel = document.createElement('label');
+      genderLabel.textContent = 'Kön';
+      genderLabel.setAttribute('for', 'gender' + p);
+      extraRow.appendChild(genderLabel);
+
+      var genderSelect = document.createElement('select');
+      genderSelect.id = 'gender' + p;
+      genderSelect.className = 'gender-select';
+      genderSelect.setAttribute('aria-label', 'Kön spelare ' + (p + 1) + ' (för automatisk uträkning)');
+      ['', 'M', 'K'].forEach(function (g) {
+        var opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g === '' ? '—' : g;
+        genderSelect.appendChild(opt);
+      });
+      genderSelect.value = state.genders[p] || '';
+      genderSelect.addEventListener('change', function (e) {
+        state.genders[p] = e.target.value;
+        persistRound();
+      });
+      extraRow.appendChild(genderSelect);
+
       var exLabel = document.createElement('label');
       exLabel.textContent = 'Extraslag';
       exLabel.setAttribute('for', 'extra' + p);
@@ -955,6 +1019,43 @@
         render();
       });
       extraRow.appendChild(exInput);
+
+      var calcBtn = document.createElement('button');
+      calcBtn.type = 'button';
+      calcBtn.className = 'calc-btn';
+      calcBtn.textContent = '🧮';
+      calcBtn.title = 'Räkna ut extraslag automatiskt (kräver HCP, kön och en bana med känd slopetabell)';
+      calcBtn.addEventListener('click', function () {
+        var table = lookupSlopeTable(state.club);
+        if (!table) {
+          showToast('Ingen slopetabell känd för "' + (state.club || 'den här klubben') + '"');
+          return;
+        }
+        var g = state.genders[p];
+        if (!g) {
+          showToast('Välj kön för spelaren först');
+          return;
+        }
+        if (!state.handicaps[p]) {
+          showToast('Fyll i HCP för spelaren först');
+          return;
+        }
+        var courseData = g === 'M' ? table.men : table.women;
+        if (!courseData) {
+          showToast('Verifierad slopedata saknas för ' + (g === 'M' ? 'herrar' : 'damer') + ' på den här banan');
+          return;
+        }
+        var result = computeCourseHandicap(state.handicaps[p], courseData);
+        if (result == null) {
+          showToast('Kunde inte tolka HCP-värdet');
+          return;
+        }
+        state.extras[p] = String(result);
+        persistRound();
+        render();
+        showToast('Extraslag uträknat: ' + result + ' (' + table.name + ')');
+      });
+      extraRow.appendChild(calcBtn);
 
       playersFields.appendChild(extraRow);
     });
@@ -1656,6 +1757,7 @@
     state.scores.push(Array(HOLES).fill(''));
     state.handicaps.push('');
     state.extras.push('');
+    state.genders.push('');
     rebuildPlayerRows();
     renderPlayerFields();
     render();
@@ -1701,6 +1803,7 @@
       players: state.players.slice(),
       handicaps: state.handicaps.slice(),
       extras: state.extras.slice(),
+      genders: state.genders.slice(),
       strokeIndex: state.strokeIndex.slice(),
       scores: state.scores.map(function (arr) { return arr.slice(); }),
       savedAt: new Date().toISOString()
@@ -1905,6 +2008,7 @@
   renderKnownPlayersList();
   render();
   renderHistory();
+  loadCourseDatabase();
 })();
 </script>
 <script>

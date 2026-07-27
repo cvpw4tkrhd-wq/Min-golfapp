@@ -1,0 +1,51 @@
+{
+  "_readme": "Databas över golfklubbar för scorekorts-appen. 'match' är en gemener-textbit som jämförs mot vad användaren skriver i Golfklubb-fältet (första träffen vinner, så mer specifika match-strängar ska ligga före generella). strokeIndex är klubbens egna publicerade INDX-siffror rakt av (appen räknar själv om till inbördes rangordning). slope.men/slope.women är Course Rating (cr), Slope Rating (slope) och Par enligt klubbens officiella slopetabell — för banor med flera tees anges standardtee (gul herr / röd dam) här, övriga tees ligger under 'tees' som referens. Endast data kontrollerad mot officiell källa (scorekort, klubbens slopetabell-PDF eller klubbens webbsida) läggs till här — fel siffror är värre än inga alls. EJ tillagda pga endast overifierade tredjepartssiffror: Borås GK, Ale GK, Sankt Jörgen Park (research 2026-07-27).",
+  "version": 2,
+  "updated": "2026-07-27",
+  "courses": [
+    {
+      "match": "albatrossen",
+      "name": "Albatross GK (Albatrossen, 18 hål)",
+      "verified": "Klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-07-11). Standardtee gul (herr) / röd (dam).",
+      "slope": {
+        "men": { "cr": 70.8, "slope": 138, "par": 71 },
+        "women": { "cr": 71.3, "slope": 133, "par": 71 }
+      },
+      "tees": {
+        "men": { "vit": { "cr": 72.4, "slope": 140, "par": 71 }, "gul": { "cr": 70.8, "slope": 138, "par": 71 }, "bla": { "cr": 68.6, "slope": 133, "par": 71 }, "rod": { "cr": 66.5, "slope": 129, "par": 71 } },
+        "women": { "gul": { "cr": 76.6, "slope": 145, "par": 71 }, "bla": { "cr": 73.9, "slope": 139, "par": 71 }, "rod": { "cr": 71.3, "slope": 133, "par": 71 } }
+      }
+    },
+    {
+      "match": "birdie",
+      "name": "Albatross GK (Birdiebanan, hål 19–27)",
+      "verified": "Klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-04-19). Par 74 avser 18 hål (9-hålsslingan spelad två varv). Standardtee gul (herr) / röd (dam).",
+      "slope": {
+        "men": { "cr": 71.4, "slope": 132, "par": 74 },
+        "women": { "cr": 72.8, "slope": 130, "par": 74 }
+      },
+      "tees": {
+        "men": { "vit": { "cr": 73.5, "slope": 137, "par": 74 }, "gul": { "cr": 71.4, "slope": 132, "par": 74 }, "bla": { "cr": 68.9, "slope": 128, "par": 74 }, "rod": { "cr": 67.8, "slope": 125, "par": 74 } },
+        "women": { "gul": { "cr": 77.2, "slope": 140, "par": 74 }, "bla": { "cr": 74.2, "slope": 133, "par": 74 }, "rod": { "cr": 72.8, "slope": 130, "par": 74 } }
+      }
+    },
+    {
+      "match": "albatross",
+      "name": "Albatross GK (Eaglekorten)",
+      "verified": "Kontrollräknat mot spelares eget scorekort 2026-07-01 (SHCP 39 herr / 45 dam vid HCP 54,0) samt klubbens officiella slope-PDF:er.",
+      "strokeIndex": [13, 11, 5, 1, 15, 9, 7, 17, 3],
+      "slope": {
+        "men": { "cr": 53.7, "slope": 83, "par": 54 },
+        "women": { "cr": 56.4, "slope": 89, "par": 54 }
+      }
+    },
+    {
+      "match": "lerjedalen",
+      "name": "Lerjedalens GK (18 hål)",
+      "verified": "Endast damer röd tee officiellt bekräftad (lerjedalen.se/spela/slope: CR 72.6 / Slope 122). Herrdata fanns bara hos tredjepart och har därför utelämnats i väntan på officiell källa.",
+      "slope": {
+        "women": { "cr": 72.6, "slope": 122, "par": 72 }
+      }
+    }
+  ]
+}
