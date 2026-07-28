@@ -16,31 +16,52 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; }
+  :root {
+    --bg-stripe-a: #1c3e2d;
+    --bg-stripe-b: #1a3928;
+    --body-text: #f2efe4;
+    --header-title: #f7f4e9;
+    --header-subtitle: #a9c2ab;
+    --field-bg: repeating-linear-gradient(100deg, #eef6ea 0px, #eef6ea 16px, #e3f0da 16px, #e3f0da 32px);
+  }
+  body.theme-light {
+    --bg-stripe-a: #eef1e8;
+    --bg-stripe-b: #e6e9df;
+    --body-text: #2b2b2b;
+    --header-title: #1c3e2d;
+    --header-subtitle: #4d6b53;
+  }
   body {
     min-height: 100vh;
     background:
       repeating-linear-gradient(
         100deg,
-        #1c3e2d 0px, #1c3e2d 46px,
-        #1a3928 46px, #1a3928 92px
+        var(--bg-stripe-a) 0px, var(--bg-stripe-a) 46px,
+        var(--bg-stripe-b) 46px, var(--bg-stripe-b) 92px
       );
     font-family: 'Inter', sans-serif;
-    color: #f2efe4;
+    color: var(--body-text);
     padding: max(20px, env(safe-area-inset-top)) 14px calc(60px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  .header { width: 100%; max-width: 640px; text-align: center; margin-bottom: 18px; }
+  .header { width: 100%; max-width: 640px; text-align: center; margin-bottom: 18px; position: relative; }
+  .sound-toggle-btn, .theme-toggle-btn {
+    position: absolute; top: 0; background: rgba(0,0,0,0.25); border: none; border-radius: 20px;
+    width: 34px; height: 34px; font-size: 16px; cursor: pointer; color: #f7f4e9;
+  }
+  .sound-toggle-btn { right: 0; }
+  .theme-toggle-btn { right: 40px; }
   .eyebrow {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px; letter-spacing: 0.22em; color: #c9a227; margin-bottom: 6px;
   }
-  .title { font-family: 'Bitter', serif; font-weight: 800; font-size: 28px; color: #f7f4e9; margin: 0; }
-  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #a9c2ab; margin-top: 6px; }
+  .title { font-family: 'Bitter', serif; font-weight: 800; font-size: 28px; color: var(--header-title); margin: 0; }
+  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--header-subtitle); margin-top: 6px; }
 
   .meta-card {
-    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    width: 100%; max-width: 640px; background: var(--field-bg); border-radius: 10px;
     padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); margin-bottom: 16px;
   }
   .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px; }
@@ -142,7 +163,7 @@
   .add-player-btn:disabled { opacity: 0.4; cursor: default; }
 
   .card {
-    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    width: 100%; max-width: 640px; background: var(--field-bg); border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.32); padding: 14px 8px 18px; margin-bottom: 14px;
     overflow-x: auto;
   }
@@ -326,6 +347,31 @@
   #trendChart, #courseChart {
     width: 100%; height: auto; background: #fffdf7; border: 1px solid #e5dfc8; border-radius: 6px;
   }
+  .season-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  .season-card {
+    background: #fffdf7; border: 1px solid #e5dfc8; border-radius: 8px; padding: 10px 12px;
+  }
+  .season-card .value {
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 20px; color: #2f5233; line-height: 1.1;
+  }
+  .season-card .label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; letter-spacing: 0.03em; margin-top: 2px;
+  }
+  .quick-entry-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 500;
+    display: flex; gap: 4px; padding: 8px calc(env(safe-area-inset-left, 0) + 8px) calc(env(safe-area-inset-bottom, 0) + 8px) calc(env(safe-area-inset-right, 0) + 8px);
+    background: #16301f; box-shadow: 0 -4px 14px rgba(0,0,0,0.35);
+    transform: translateY(110%); transition: transform 0.15s ease-out;
+  }
+  .quick-entry-bar.show { transform: translateY(0); }
+  .quick-entry-bar button {
+    flex: 1; height: 44px; border-radius: 8px; border: none; background: #2f5233; color: #f7f4e9;
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 17px;
+  }
+  .quick-entry-bar button:active { background: #c9a227; color: #1c2b1c; }
+  .quick-entry-bar button.quick-clear { background: #6b2a22; font-size: 15px; flex: 0.8; }
   .stats-legend {
     display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;
     font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6b6552;
@@ -342,6 +388,11 @@
   }
   .history-head strong { color: #2b2b2b; font-family: 'Bitter', serif; font-size: 13px; }
   .empty-history { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6b6552; text-align: center; padding: 6px 0; }
+  .backup-hint {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6552; line-height: 1.5; margin: 0 0 12px;
+  }
+  .backup-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .backup-btnrow button { flex: 1; min-width: 140px; }
 
   .toast {
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2b2b2b;
@@ -367,7 +418,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.21 · 2026-07-27</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.24 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -378,6 +429,8 @@
   </style>
 
   <div class="header">
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Mörkt/ljust tema">🌙</button>
+    <button type="button" class="sound-toggle-btn" id="soundToggleBtn" title="Ljud vid birdie/bogey av/på">🔊</button>
     <div class="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
     <h1 class="title">Niohåls-scorekort</h1>
     <div class="subtitle">9 hål · alla par 3 · par för rundan <span id="parTotalLabel">27</span></div>
@@ -483,6 +536,10 @@
       <div id="statsEmpty" class="empty-history">Spara några rundor för att se statistik.</div>
       <div id="statsContent" style="display:none;">
         <div class="stats-block">
+          <div class="stats-title">Säsongen i siffror</div>
+          <div class="season-grid" id="seasonGrid"></div>
+        </div>
+        <div class="stats-block">
           <div class="stats-title">Resultat mot par per runda</div>
           <canvas id="trendChart" width="600" height="220"></canvas>
           <div class="stats-legend" id="trendLegend"></div>
@@ -507,6 +564,38 @@
       </div>
     </div>
   </details>
+
+  <details class="panel" id="backupPanel">
+    <summary>Säkerhetskopia</summary>
+    <div class="panel-body">
+      <p class="backup-hint">All data sparas bara i den här webbläsaren. Exportera regelbundet, särskilt inför att byta telefon eller rensa webbläsardata.</p>
+      <div class="backup-btnrow">
+        <button class="btn-secondary" id="exportBackupBtn" type="button">Exportera säkerhetskopia</button>
+        <button class="btn-ghost" id="importBackupBtn" type="button">Återställ från fil</button>
+        <input type="file" id="importBackupFile" accept="application/json,.json" style="display:none;" />
+      </div>
+    </div>
+  </details>
+
+  <div class="confirm-inline" id="confirmImport">
+    <span id="confirmImportText">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelImportBtn" type="button">Avbryt</button>
+      <button class="btn-danger" id="confirmImportBtn" type="button">Ja, återställ</button>
+    </div>
+  </div>
+
+  <div class="quick-entry-bar" id="quickEntryBar">
+    <button type="button" data-score="1">1</button>
+    <button type="button" data-score="2">2</button>
+    <button type="button" data-score="3">3</button>
+    <button type="button" data-score="4">4</button>
+    <button type="button" data-score="5">5</button>
+    <button type="button" data-score="6">6</button>
+    <button type="button" data-score="7">7</button>
+    <button type="button" data-score="8">8</button>
+    <button type="button" class="quick-clear" data-score="">⌫</button>
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -570,6 +659,8 @@
   var STORAGE_ROUND = 'golf-current-round';
   var STORAGE_HISTORY = 'golf-history';
   var STORAGE_PROFILES = 'golf-player-profiles';
+  var STORAGE_SOUND = 'golf-sound-enabled';
+  var STORAGE_THEME = 'golf-theme';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
 
   // Course/slope data now lives in courses.json (loaded below) instead of being
@@ -668,6 +759,64 @@
     return 'dbogey';
   }
   function pad(s, n) { s = String(s); while (s.length < n) s += ' '; return s; }
+
+  // ---- sound & haptic feedback ----
+  var soundEnabled = true;
+  try { var savedSound = localStorage.getItem(STORAGE_SOUND); if (savedSound !== null) soundEnabled = savedSound === '1'; } catch (e) {}
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) audioCtx = new Ctx();
+    }
+    return audioCtx;
+  }
+  function playTone(freq, duration, delay) {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    var t0 = ctx.currentTime + (delay || 0);
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.02);
+  }
+  function playScoreFeedback(cls) {
+    if (!soundEnabled) return;
+    if (cls === 'eagle') {
+      playTone(880, 0.14, 0); playTone(1174, 0.18, 0.1);
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+    } else if (cls === 'birdie') {
+      playTone(988, 0.16, 0);
+      if (navigator.vibrate) navigator.vibrate(30);
+    } else if (cls === 'bogey' || cls === 'dbogey') {
+      playTone(220, 0.2, 0);
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
+  }
+  function setSoundEnabled(on) {
+    soundEnabled = on;
+    try { localStorage.setItem(STORAGE_SOUND, on ? '1' : '0'); } catch (e) {}
+    var btn = document.getElementById('soundToggleBtn');
+    if (btn) btn.textContent = on ? '🔊' : '🔇';
+  }
+
+  // ---- theme (dark / light) ----
+  var currentTheme = 'dark';
+  try { var savedTheme = localStorage.getItem(STORAGE_THEME); if (savedTheme === 'light') currentTheme = 'light'; } catch (e) {}
+  function applyTheme(theme) {
+    currentTheme = theme;
+    document.body.classList.toggle('theme-light', theme === 'light');
+    var btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+    try { localStorage.setItem(STORAGE_THEME, theme); } catch (e) {}
+  }
   function courseLabel(round) {
     var club = round.club || round.course || '';
     var variant = round.courseVariant || '';
@@ -760,6 +909,7 @@
   var state = defaultRound();
   var roundHistory = [];
   var focusedHole = 0;
+  var currentScoreCell = null; // { p, h }
   var scoreInputs = []; // scoreInputs[p][h]
 
   // ---- load persisted ----
@@ -882,6 +1032,29 @@
       }
     }
     return order;
+  }
+
+  function advanceToNextCell(p, h) {
+    var order = buildOrder();
+    var idx = order.findIndex(function (o) { return o.p === p && o.h === h; });
+    var next = order[idx + 1];
+    if (next) {
+      var el = scoreInputs[next.p][next.h];
+      if (el) { el.focus(); el.select(); }
+    } else {
+      var cur = scoreInputs[p] && scoreInputs[p][h];
+      if (cur) cur.blur();
+    }
+  }
+
+  function showQuickEntryBar() {
+    var bar = document.getElementById('quickEntryBar');
+    if (bar) bar.classList.add('show');
+  }
+  function hideQuickEntryBar() {
+    var bar = document.getElementById('quickEntryBar');
+    if (bar) bar.classList.remove('show');
+    currentScoreCell = null;
   }
 
   function showToast(msg) {
@@ -1099,20 +1272,25 @@
             var clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
             state.scores[p][h] = clean;
             render();
+            if (clean !== '') {
+              var extraFb = Number(state.extras[p]) || 0;
+              var npFb = netParForHole(state.strokeIndex, extraFb, h);
+              playScoreFeedback(scoreClass(clean, npFb));
+            }
           });
-          input.addEventListener('focus', function () { focusedHole = h; updateFlag(); });
+          input.addEventListener('focus', function () {
+            focusedHole = h;
+            currentScoreCell = { p: p, h: h };
+            updateFlag();
+            showQuickEntryBar();
+          });
+          input.addEventListener('blur', function () {
+            hideQuickEntryBar();
+          });
           input.addEventListener('keydown', function (e) {
             if (e.key !== 'Enter') return;
             e.preventDefault();
-            var order = buildOrder();
-            var idx = order.findIndex(function (o) { return o.p === p && o.h === h; });
-            var next = order[idx + 1];
-            if (next) {
-              var el = scoreInputs[next.p][next.h];
-              if (el) { el.focus(); el.select(); }
-            } else {
-              input.blur();
-            }
+            advanceToNextCell(p, h);
           });
           td.appendChild(input);
           var dotsSpan = document.createElement('span');
@@ -1438,6 +1616,75 @@
     });
   }
 
+  function computeSeasonSummary() {
+    var roundsCount = roundHistory.length;
+    var totalDiff = 0, diffCount = 0;
+    var birdieOrBetter = 0, holesPlayed = 0;
+    var best = null; // { diff, name, date, club }
+
+    roundHistory.forEach(function (r) {
+      var players = r.players || [];
+      var scores = r.scores || [];
+      players.forEach(function (name, p) {
+        var arr = scores[p] || [];
+        var played = arr.filter(function (v) { return v !== '' && v != null; }).length;
+        if (played === 0) return;
+        var sum = arr.reduce(function (a, v) { return a + (Number(v) || 0); }, 0);
+        arr.forEach(function (v) {
+          if (v === '' || v == null) return;
+          holesPlayed++;
+          if (Number(v) <= PAR - 1) birdieOrBetter++;
+        });
+        var diff = sum - played * PAR;
+        totalDiff += diff;
+        diffCount++;
+        if (played === HOLES && (best === null || diff < best.diff)) {
+          best = { diff: diff, name: name || 'Spelare', date: r.date, club: courseLabel(r) };
+        }
+      });
+    });
+
+    return {
+      roundsCount: roundsCount,
+      avgDiff: diffCount > 0 ? (totalDiff / diffCount) : null,
+      birdieOrBetter: birdieOrBetter,
+      holesPlayed: holesPlayed,
+      best: best
+    };
+  }
+
+  function renderSeasonSummary() {
+    var grid = document.getElementById('seasonGrid');
+    if (!grid) return;
+    var s = computeSeasonSummary();
+    var cards = [];
+    cards.push({ value: String(s.roundsCount), label: 'Sparade rundor' });
+    cards.push({
+      value: s.avgDiff == null ? '–' : diffLabel(Math.round(s.avgDiff * 10) / 10),
+      label: 'Snitt mot par / runda'
+    });
+    cards.push({
+      value: s.best ? diffLabel(s.best.diff) : '–',
+      label: s.best ? ('Bästa runda — ' + s.best.name + (s.best.club ? ' (' + s.best.club + ')' : '')) : 'Bästa runda'
+    });
+    cards.push({ value: String(s.birdieOrBetter), label: 'Birdies eller bättre (' + s.holesPlayed + ' hål spelade)' });
+
+    grid.innerHTML = '';
+    cards.forEach(function (c) {
+      var card = document.createElement('div');
+      card.className = 'season-card';
+      var val = document.createElement('div');
+      val.className = 'value';
+      val.textContent = c.value;
+      var lbl = document.createElement('div');
+      lbl.className = 'label';
+      lbl.textContent = c.label;
+      card.appendChild(val);
+      card.appendChild(lbl);
+      grid.appendChild(card);
+    });
+  }
+
   function renderStats() {
     var trendSeries = collectPlayerTrendSeries();
     var courseData = collectCourseAverages();
@@ -1447,6 +1694,7 @@
     statsContent.style.display = hasData ? 'block' : 'none';
     if (!hasData) return;
 
+    renderSeasonSummary();
     drawTrendChart(trendChart, trendSeries);
     trendLegend.innerHTML = '';
     trendSeries.forEach(function (s) {
@@ -1573,8 +1821,8 @@
       showToast('Kunde inte kopiera');
     }
   }
-  function downloadText(text, filename) {
-    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  function downloadText(text, filename, mime) {
+    var blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
@@ -1998,6 +2246,122 @@
       copyText(text);
       showToast('Kunde inte dela — loggen kopierad istället');
     });
+  });
+
+  // ---- backup / restore ----
+  function buildBackupPayload() {
+    return {
+      appVersion: 'niohals-scorekort-backup',
+      formatVersion: 1,
+      exportedAt: new Date().toISOString(),
+      history: roundHistory,
+      playerProfiles: playerProfiles,
+      currentRound: state
+    };
+  }
+
+  document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+  document.getElementById('soundToggleBtn').addEventListener('click', function () {
+    setSoundEnabled(!soundEnabled);
+    showToast(soundEnabled ? 'Ljud vid birdie/bogey på' : 'Ljud vid birdie/bogey av');
+  });
+
+  applyTheme(currentTheme);
+  document.getElementById('themeToggleBtn').addEventListener('click', function () {
+    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  });
+
+  // ---- quick score entry bar ----
+  Array.prototype.forEach.call(document.querySelectorAll('#quickEntryBar button'), function (btn) {
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus on the score input
+    btn.addEventListener('click', function () {
+      if (!currentScoreCell) return;
+      var p = currentScoreCell.p, h = currentScoreCell.h;
+      var val = btn.getAttribute('data-score');
+      state.scores[p][h] = val;
+      var el = scoreInputs[p] && scoreInputs[p][h];
+      if (el) el.value = val;
+      render();
+      if (val !== '') {
+        var extraFb2 = Number(state.extras[p]) || 0;
+        var npFb2 = netParForHole(state.strokeIndex, extraFb2, h);
+        playScoreFeedback(scoreClass(val, npFb2));
+        advanceToNextCell(p, h);
+      }
+    });
+  });
+
+  document.getElementById('exportBackupBtn').addEventListener('click', function () {
+    var payload = buildBackupPayload();
+    var stamp = todayISO();
+    downloadText(JSON.stringify(payload, null, 2), 'golfapp-backup_' + stamp + '.json', 'application/json');
+    showToast('Säkerhetskopia nedladdad');
+  });
+
+  var pendingImport = null;
+  var importBackupFile = document.getElementById('importBackupFile');
+
+  document.getElementById('importBackupBtn').addEventListener('click', function () {
+    importBackupFile.value = '';
+    importBackupFile.click();
+  });
+
+  importBackupFile.addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try {
+        data = JSON.parse(reader.result);
+      } catch (err) {
+        showToast('Filen kunde inte läsas — är det en giltig säkerhetskopia?');
+        return;
+      }
+      if (!data || (!Array.isArray(data.history) && !data.playerProfiles)) {
+        showToast('Filen ser inte ut som en säkerhetskopia från appen');
+        return;
+      }
+      pendingImport = data;
+      var roundCount = Array.isArray(data.history) ? data.history.length : 0;
+      document.getElementById('confirmImportText').textContent =
+        'Återställ från fil (' + roundCount + ' sparade rundor)? Nuvarande historik och spelarminnen skrivs över.';
+      document.getElementById('confirmImport').classList.add('show');
+    };
+    reader.onerror = function () {
+      showToast('Kunde inte läsa filen');
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('cancelImportBtn').addEventListener('click', function () {
+    pendingImport = null;
+    document.getElementById('confirmImport').classList.remove('show');
+  });
+
+  document.getElementById('confirmImportBtn').addEventListener('click', function () {
+    if (!pendingImport) return;
+    if (Array.isArray(pendingImport.history)) {
+      roundHistory = pendingImport.history;
+      persistHistory();
+    }
+    if (pendingImport.playerProfiles && typeof pendingImport.playerProfiles === 'object') {
+      playerProfiles = pendingImport.playerProfiles;
+      try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
+    }
+    if (pendingImport.currentRound && typeof pendingImport.currentRound === 'object') {
+      state = pendingImport.currentRound;
+      if (!state.genders) state.genders = state.players.map(function () { return ''; });
+      persistRound();
+    }
+    pendingImport = null;
+    document.getElementById('confirmImport').classList.remove('show');
+    rebuildPlayerRows();
+    renderPlayerFields();
+    renderKnownPlayersList();
+    render();
+    renderHistory();
+    showToast('Säkerhetskopia återställd');
   });
 
   document.getElementById('parTotalLabel').textContent = PAR * HOLES;
