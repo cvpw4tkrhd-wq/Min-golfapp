@@ -554,6 +554,18 @@
       "is": "Ekki tókst að sækja staðsetningu.", "en": "Couldn't get your location.", "es": "No se pudo obtener la ubicación.",
       "fr": "Impossible d'obtenir la position.", "it": "Impossibile recuperare la posizione.", "de": "Standort konnte nicht ermittelt werden."
     },
+    "geo_lookup_failed": {
+      "sv": "Uppslagstjänsten svarade inte just nu — testa igen om en stund.",
+      "no": "Oppslagstjenesten svarte ikke akkurat nå — prøv igjen om en stund.",
+      "da": "Opslagstjenesten svarede ikke lige nu — prøv igen om lidt.",
+      "fi": "Hakupalvelu ei vastannut juuri nyt — yritä uudelleen hetken kuluttua.",
+      "is": "Uppflettiþjónustan svaraði ekki núna — reyndu aftur eftir smá stund.",
+      "en": "The lookup service didn't respond right now — try again in a moment.",
+      "es": "El servicio de búsqueda no respondió ahora mismo — inténtalo de nuevo en un momento.",
+      "fr": "Le service de recherche n'a pas répondu pour le moment — réessayez dans un instant.",
+      "it": "Il servizio di ricerca non ha risposto in questo momento — riprova tra poco.",
+      "de": "Der Suchdienst hat gerade nicht geantwortet — versuch es gleich noch einmal."
+    },
     "geo_could_not_determine": {
       "sv": "Positionen kunde inte fastställas.", "no": "Posisjonen kunne ikke fastslås.", "da": "Placeringen kunne ikke bestemmes.",
       "fi": "Sijaintia ei voitu määrittää.", "is": "Ekki tókst að ákvarða staðsetningu.", "en": "Your location couldn't be determined.",

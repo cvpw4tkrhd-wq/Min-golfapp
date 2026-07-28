@@ -448,7 +448,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 56px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.30 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 56px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.31 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -2146,10 +2146,12 @@
         reject(new Error(t('geo_not_supported')));
         return;
       }
+      // enableHighAccuracy:false uses wifi/cell-based positioning instead of raw GPS —
+      // noticeably faster to resolve, and plenty precise for finding clubs within ~25km.
       navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 24000,
-        maximumAge: 60000
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000
       });
     });
   }
@@ -2158,23 +2160,50 @@
     'https://overpass.kumi.systems/api/interpreter',
     'https://overpass-api.de/api/interpreter'
   ];
+  var OVERPASS_TIMEOUT_MS = 8000;
 
-  function fetchOverpass(query, endpointIndex) {
-    endpointIndex = endpointIndex || 0;
-    var url = OVERPASS_ENDPOINTS[endpointIndex];
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'data=' + encodeURIComponent(query)
-    }).then(function (resp) {
-      if (!resp.ok) throw new Error('status ' + resp.status);
-      return resp.json();
-    }).catch(function (err) {
-      var nextIndex = endpointIndex + 1;
-      if (nextIndex < OVERPASS_ENDPOINTS.length) {
-        return fetchOverpass(query, nextIndex);
-      }
-      throw new Error('Uppslagstjänsten svarade inte (' + (err && err.message ? err.message : 'nätverksfel') + ').');
+  function fetchWithTimeout(url, options, timeoutMs) {
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = null;
+    if (controller) {
+      options = Object.assign({}, options, { signal: controller.signal });
+      timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    }
+    return fetch(url, options).finally(function () {
+      if (timer) clearTimeout(timer);
+    });
+  }
+
+  // Fires the query at every mirror at the same time and uses whichever answers first,
+  // instead of waiting for one to fully time out before trying the next — much faster
+  // in practice since a single slow/unresponsive mirror no longer blocks the whole search.
+  function fetchOverpass(query) {
+    var attempts = OVERPASS_ENDPOINTS.map(function (url) {
+      return fetchWithTimeout(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query)
+      }, OVERPASS_TIMEOUT_MS).then(function (resp) {
+        if (!resp.ok) throw new Error('status ' + resp.status);
+        return resp.json();
+      });
+    });
+
+    if (window.Promise && Promise.any) {
+      return Promise.any(attempts).catch(function () {
+        throw new Error(t('geo_lookup_failed'));
+      });
+    }
+    // Fallback for older browsers without Promise.any: resolve with the first success,
+    // reject only once every attempt has failed.
+    return new Promise(function (resolve, reject) {
+      var remaining = attempts.length;
+      attempts.forEach(function (p) {
+        p.then(resolve).catch(function () {
+          remaining--;
+          if (remaining === 0) reject(new Error(t('geo_lookup_failed')));
+        });
+      });
     });
   }
 
