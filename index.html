@@ -254,15 +254,14 @@
     box-shadow: 0 0 0 2.5px #f5f0e1, 0 0 0 4.5px #b23a2e;
   }
 
-  .flag {
-    position: absolute; top: -2px; left: 50%; transform: translateX(-50%) scale(0.6);
-    width: 14px; height: 22px; opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease;
+  .hole-marker {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid transparent; box-sizing: border-box;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
   }
-  .flag-active { opacity: 1; transform: translateX(-50%) scale(1); }
-  .flag-pole { position: absolute; left: 6px; top: 0; width: 1.5px; height: 22px; background: #2b2b2b; }
-  .flag-cloth {
-    position: absolute; left: 7px; top: 0; width: 0; height: 0;
-    border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 9px solid #b23a2e;
+  .hole-marker.hole-marker-active {
+    border-color: #c9a227; background-color: rgba(201, 162, 39, 0.22); transform: scale(1.08);
   }
 
   .legend {
@@ -418,7 +417,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.24 · 2026-07-27</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.26 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -687,7 +686,11 @@
     var key = (clubName || '').trim().toLowerCase();
     if (!key) return null;
     for (var i = 0; i < KNOWN_COURSES.length; i++) {
-      if (key.indexOf(KNOWN_COURSES[i].match) !== -1) return KNOWN_COURSES[i];
+      var m = KNOWN_COURSES[i].match;
+      var keywords = Array.isArray(m) ? m : [m];
+      for (var j = 0; j < keywords.length; j++) {
+        if (keywords[j] && key.indexOf(keywords[j]) !== -1) return KNOWN_COURSES[i];
+      }
     }
     return null;
   }
@@ -998,7 +1001,7 @@
   // ---- build static hole columns in header + par row + stroke-index row (constant regardless of player count) ----
   for (var h = 0; h < HOLES; h++) {
     var th = document.createElement('th');
-    th.innerHTML = '<span class="flag" data-hole="' + h + '"><span class="flag-pole"></span><span class="flag-cloth"></span></span>' + (h + 1);
+    th.innerHTML = '<span class="hole-marker" data-hole="' + h + '">' + (h + 1) + '</span>';
     headRow.insertBefore(th, headRow.lastElementChild);
 
     var parTd = document.createElement('td');
@@ -1047,14 +1050,43 @@
     }
   }
 
+  var quickBarHideTimer = null;
+
+  function positionQuickEntryBar() {
+    var bar = document.getElementById('quickEntryBar');
+    if (!bar) return;
+    if (window.visualViewport) {
+      var vv = window.visualViewport;
+      var offset = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      bar.style.bottom = offset + 'px';
+    } else {
+      bar.style.bottom = '0px';
+    }
+  }
+
   function showQuickEntryBar() {
+    if (quickBarHideTimer) { clearTimeout(quickBarHideTimer); quickBarHideTimer = null; }
     var bar = document.getElementById('quickEntryBar');
     if (bar) bar.classList.add('show');
+    positionQuickEntryBar();
+    // keyboard/viewport takes a moment to settle on iOS, so re-check a few times
+    setTimeout(positionQuickEntryBar, 60);
+    setTimeout(positionQuickEntryBar, 250);
+    setTimeout(positionQuickEntryBar, 500);
   }
-  function hideQuickEntryBar() {
-    var bar = document.getElementById('quickEntryBar');
-    if (bar) bar.classList.remove('show');
-    currentScoreCell = null;
+  function scheduleHideQuickEntryBar() {
+    if (quickBarHideTimer) clearTimeout(quickBarHideTimer);
+    quickBarHideTimer = setTimeout(function () {
+      var bar = document.getElementById('quickEntryBar');
+      if (bar) bar.classList.remove('show');
+      currentScoreCell = null;
+      quickBarHideTimer = null;
+    }, 250);
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', positionQuickEntryBar);
+    window.visualViewport.addEventListener('scroll', positionQuickEntryBar);
   }
 
   function showToast(msg) {
@@ -1064,8 +1096,8 @@
   }
 
   function updateFlag() {
-    document.querySelectorAll('.flag').forEach(function (f) {
-      f.classList.toggle('flag-active', Number(f.getAttribute('data-hole')) === focusedHole);
+    document.querySelectorAll('.hole-marker').forEach(function (f) {
+      f.classList.toggle('hole-marker-active', Number(f.getAttribute('data-hole')) === focusedHole);
     });
   }
 
@@ -1265,7 +1297,8 @@
           var input = document.createElement('input');
           input.className = 'scoreinput';
           input.type = 'text';
-          input.inputMode = 'numeric';
+          input.inputMode = 'none';
+          input.setAttribute('readonly', 'readonly');
           input.setAttribute('data-p', p);
           input.setAttribute('data-h', h);
           input.addEventListener('input', function (e) {
@@ -1285,7 +1318,7 @@
             showQuickEntryBar();
           });
           input.addEventListener('blur', function () {
-            hideQuickEntryBar();
+            scheduleHideQuickEntryBar();
           });
           input.addEventListener('keydown', function (e) {
             if (e.key !== 'Enter') return;
@@ -2273,9 +2306,10 @@
 
   // ---- quick score entry bar ----
   Array.prototype.forEach.call(document.querySelectorAll('#quickEntryBar button'), function (btn) {
-    btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus on the score input
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus on the score input when possible
     btn.addEventListener('click', function () {
       if (!currentScoreCell) return;
+      if (quickBarHideTimer) { clearTimeout(quickBarHideTimer); quickBarHideTimer = null; }
       var p = currentScoreCell.p, h = currentScoreCell.h;
       var val = btn.getAttribute('data-score');
       state.scores[p][h] = val;
@@ -2287,6 +2321,8 @@
         var npFb2 = netParForHole(state.strokeIndex, extraFb2, h);
         playScoreFeedback(scoreClass(val, npFb2));
         advanceToNextCell(p, h);
+      } else if (el) {
+        el.focus(); // clear button: stay on the same cell so it can be re-entered right away
       }
     });
   });
