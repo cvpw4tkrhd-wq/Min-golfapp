@@ -378,17 +378,19 @@
   }
   .quick-entry-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 500;
-    display: flex; gap: 3px; padding: 8px calc(env(safe-area-inset-left, 0) + 4px) calc(env(safe-area-inset-bottom, 0) + 8px) calc(env(safe-area-inset-right, 0) + 4px);
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px calc(env(safe-area-inset-left, 0) + 6px) calc(env(safe-area-inset-bottom, 0) + 8px) calc(env(safe-area-inset-right, 0) + 6px);
     background: #16301f; box-shadow: 0 -4px 14px rgba(0,0,0,0.35);
     transform: translateY(110%); transition: transform 0.15s ease-out;
   }
   .quick-entry-bar.show { transform: translateY(0); }
+  .quick-entry-row { display: flex; gap: 6px; }
   .quick-entry-bar button {
-    flex: 1; height: 44px; border-radius: 7px; border: none; background: #2f5233; color: #f7f4e9;
-    font-family: 'Bitter', serif; font-weight: 700; font-size: 15px; padding: 0; min-width: 0;
+    flex: 1; height: 54px; border-radius: 9px; border: none; background: #2f5233; color: #f7f4e9;
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 20px; padding: 0; min-width: 0;
   }
   .quick-entry-bar button:active { background: #c9a227; color: #1c2b1c; }
-  .quick-entry-bar button.quick-clear { background: #6b2a22; font-size: 14px; flex: 0.85; }
+  .quick-entry-bar button.quick-clear { background: #6b2a22; font-size: 18px; }
   .confetti-canvas {
     position: fixed; inset: 0; z-index: 900; pointer-events: none;
   }
@@ -448,7 +450,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 56px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.31 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.32 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -625,17 +627,20 @@
   </div>
 
   <div class="quick-entry-bar" id="quickEntryBar">
-    <button type="button" data-score="1">1</button>
-    <button type="button" data-score="2">2</button>
-    <button type="button" data-score="3">3</button>
-    <button type="button" data-score="4">4</button>
-    <button type="button" data-score="5">5</button>
-    <button type="button" data-score="6">6</button>
-    <button type="button" data-score="7">7</button>
-    <button type="button" data-score="8">8</button>
-    <button type="button" data-score="9">9</button>
-    <button type="button" data-score="10">10</button>
-    <button type="button" class="quick-clear" data-score="">⌫</button>
+    <div class="quick-entry-row">
+      <button type="button" data-score="1">1</button>
+      <button type="button" data-score="2">2</button>
+      <button type="button" data-score="3">3</button>
+      <button type="button" data-score="4">4</button>
+      <button type="button" data-score="5">5</button>
+    </div>
+    <div class="quick-entry-row">
+      <button type="button" data-score="6">6</button>
+      <button type="button" data-score="7">7</button>
+      <button type="button" data-score="8">8</button>
+      <button type="button" data-score="9">9</button>
+      <button type="button" class="quick-clear" data-score="">⌫</button>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
