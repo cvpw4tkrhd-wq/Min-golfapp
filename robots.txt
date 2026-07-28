@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cvpw4tkrhd-wq.github.io/Min-golfapp/sitemap.xml

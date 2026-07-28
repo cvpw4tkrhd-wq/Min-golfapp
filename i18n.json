@@ -625,6 +625,10 @@
       "fr": "Si vous aimez cette appli, n'hésitez pas à me remercier avec un café :)",
       "it": "Se ti piace questa app, sentiti libero di ringraziarmi con una donazione per un caffè :)",
       "de": "Wenn dir diese App gefällt, kannst du mir gerne mit einer Kaffeespende danken :)"
+    },
+    "toast_hole_in_one": {
+      "sv": "HÅL I ETT! ⛳🎉", "no": "HULL I ETT! ⛳🎉", "da": "HUL I ET! ⛳🎉", "fi": "REIKÄPALLO! ⛳🎉", "is": "HOLA Í HÖGGI! ⛳🎉",
+      "en": "HOLE IN ONE! ⛳🎉", "es": "¡HOYO EN UNO! ⛳🎉", "fr": "TROU EN UN ! ⛳🎉", "it": "BUCA IN UNO! ⛳🎉", "de": "HOLE IN ONE! ⛳🎉"
     }
   }
 }
