@@ -53,6 +53,12 @@
   }
   .sound-toggle-btn { right: 0; }
   .theme-toggle-btn { right: 40px; }
+  .lang-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+  .lang-globe { font-size: 13px; opacity: 0.85; }
+  #langSelect {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--header-subtitle, #a9c2ab);
+    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 3px 8px;
+  }
   .eyebrow {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px; letter-spacing: 0.22em; color: #c9a227; margin-bottom: 6px;
@@ -393,6 +399,16 @@
   .backup-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
   .backup-btnrow button { flex: 1; min-width: 140px; }
 
+  .coffee-footnote {
+    width: 100%; max-width: 640px; text-align: center; margin: 4px 0 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; line-height: 1.6; color: var(--header-subtitle, #a9c2ab);
+    opacity: 0.75;
+  }
+  .coffee-footnote a {
+    display: inline-block; margin-top: 2px; color: #c9a227; text-decoration: none;
+  }
+  .coffee-footnote a:hover { text-decoration: underline; }
+
   .toast {
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2b2b2b;
     color: #f5f0e1; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 16px;
@@ -417,7 +433,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.26 · 2026-07-27</div>
+  <div style="position:fixed; top:4px; right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.28 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -428,39 +444,43 @@
   </style>
 
   <div class="header">
-    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Mörkt/ljust tema">🌙</button>
-    <button type="button" class="sound-toggle-btn" id="soundToggleBtn" title="Ljud vid birdie/bogey av/på">🔊</button>
-    <div class="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
-    <h1 class="title">Niohåls-scorekort</h1>
-    <div class="subtitle">9 hål · alla par 3 · par för rundan <span id="parTotalLabel">27</span></div>
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" data-i18n-title="theme_toggle_title" title="Mörkt/ljust tema">🌙</button>
+    <button type="button" class="sound-toggle-btn" id="soundToggleBtn" data-i18n-title="sound_toggle_title" title="Ljud vid birdie/bogey av/på">🔊</button>
+    <div class="eyebrow" data-i18n="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
+    <h1 class="title" data-i18n="app_title">Niohåls-scorekort</h1>
+    <div class="subtitle"><span data-i18n="subtitle">9 hål · alla par 3 · par för rundan</span> <span id="parTotalLabel">27</span></div>
+    <div class="lang-row">
+      <span class="lang-globe">🌐</span>
+      <select id="langSelect" data-i18n-title="lang_toggle_title" title="Språk"></select>
+    </div>
   </div>
 
   <div class="meta-card">
     <div class="meta-row">
       <div class="field">
-        <label for="date">Datum</label>
+        <label for="date" data-i18n="date_label">Datum</label>
         <input id="date" type="date" />
       </div>
       <div class="field">
-        <label for="time">Starttid</label>
+        <label for="time" data-i18n="time_label">Starttid</label>
         <input id="time" type="time" />
       </div>
     </div>
 
     <div class="field course-field">
-      <label for="club">Golfklubb</label>
+      <label for="club" data-i18n="club_label">Golfklubb</label>
       <div class="course-input-row">
-        <input id="club" type="text" placeholder="T.ex. Djursholms GK" />
-        <button class="locate-btn" id="locateBtn" type="button" title="Hitta klubbar i närheten">📍</button>
+        <input id="club" type="text" placeholder="T.ex. Djursholms GK" data-i18n-placeholder="club_placeholder" />
+        <button class="locate-btn" id="locateBtn" type="button" data-i18n-title="locate_btn_title" title="Hitta klubbar i närheten">📍</button>
       </div>
       <div class="course-status" id="courseStatus"></div>
       <select id="clubResults" class="club-results" style="display:none;"></select>
     </div>
 
-    <div class="players-label">Spelare (max 4)</div>
+    <div class="players-label" data-i18n="players_label">Spelare (max 4)</div>
     <div id="playersFields"></div>
     <datalist id="knownPlayers"></datalist>
-    <button class="add-player-btn" id="addPlayerBtn" type="button">+ Lägg till spelare</button>
+    <button class="add-player-btn" id="addPlayerBtn" type="button" data-i18n="add_player_btn">+ Lägg till spelare</button>
   </div>
 
   <div id="leaderBanner" class="leader-banner" style="display:none;"></div>
@@ -469,82 +489,82 @@
     <table class="score">
       <thead>
         <tr id="headRow">
-          <th class="rowlabel">Hål</th>
+          <th class="rowlabel" data-i18n="hole_th">Hål</th>
           <!-- hole headers injected -->
-          <th>Totalt</th>
+          <th data-i18n="total_th">Totalt</th>
         </tr>
       </thead>
       <tbody>
         <tr class="par-row" id="parRow">
-          <td class="rowlabel">Par</td>
+          <td class="rowlabel" data-i18n="par_row_label">Par</td>
           <!-- par cells injected -->
           <td id="parTotalCell">27</td>
         </tr>
         <tr class="hcp-row" id="hcpRow">
-          <td class="rowlabel">Index<span class="hcp-info" title="Skriv in din banas egna slagindex-siffror rakt av (t.ex. 1-18 eller udda tal) — appen räknar själv ut vilket hål som är svårast.">?</span></td>
+          <td class="rowlabel"><span data-i18n="index_row_label">Index</span><span class="hcp-info" data-i18n-title="index_info_title" title="Skriv in din banas egna slagindex-siffror rakt av (t.ex. 1-18 eller udda tal) — appen räknar själv ut vilket hål som är svårast.">?</span></td>
           <!-- stroke index cells injected -->
           <td></td>
         </tr>
       </tbody>
       <tbody id="playerRows"></tbody>
     </table>
-    <div class="hcp-legend">● = extra slag på hålet för spelaren (netto-par)</div>
+    <div class="hcp-legend" data-i18n="hcp_legend">● = extra slag på hålet för spelaren (netto-par)</div>
   </div>
 
   <div class="legend">
-    <span><span class="swatch sw-birdie"></span> Birdie / eagle (dubbel ring)</span>
-    <span><span class="swatch sw-par"></span> Par</span>
-    <span><span class="swatch sw-bogey"></span> Bogey / dubbel (dubbel ram)</span>
+    <span><span class="swatch sw-birdie"></span> <span data-i18n="legend_birdie">Birdie / eagle (dubbel ring)</span></span>
+    <span><span class="swatch sw-par"></span> <span data-i18n="legend_par">Par</span></span>
+    <span><span class="swatch sw-bogey"></span> <span data-i18n="legend_bogey">Bogey / dubbel (dubbel ram)</span></span>
   </div>
 
   <div class="confirm-inline" id="confirmNew">
-    <span>Starta ny runda? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
+    <span data-i18n="confirm_new_text">Starta ny runda? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
     <div class="btns">
-      <button class="btn-secondary" id="cancelNewBtn" type="button">Avbryt</button>
-      <button class="btn-danger" id="confirmNewBtn" type="button">Ja, ny runda</button>
+      <button class="btn-secondary" id="cancelNewBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmNewBtn" type="button" data-i18n="confirm_new_btn">Ja, ny runda</button>
     </div>
   </div>
 
   <div class="confirm-inline" id="confirmClear">
-    <span>Rensa alla inmatade slag? Spelare, klubb och HCP behålls — bara resultaten nollställs.</span>
+    <span data-i18n="confirm_clear_text">Rensa alla inmatade slag? Spelare, klubb och HCP behålls — bara resultaten nollställs.</span>
     <div class="btns">
-      <button class="btn-secondary" id="cancelClearBtn" type="button">Avbryt</button>
-      <button class="btn-danger" id="confirmClearBtn" type="button">Ja, rensa</button>
+      <button class="btn-secondary" id="cancelClearBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmClearBtn" type="button" data-i18n="confirm_clear_btn">Ja, rensa</button>
     </div>
   </div>
 
   <div class="btnrow">
-    <button class="btn-secondary" id="newRoundBtn" type="button">Ny runda</button>
-    <button class="btn-secondary" id="clearScoresBtn" type="button">Rensa resultat</button>
-    <button class="btn-primary" id="saveHistoryBtn" type="button">Spara runda i historik</button>
-    <button class="btn-ghost" id="shareBtn" type="button">Dela</button>
-    <button class="btn-ghost" id="copyLogBtn" type="button">Kopiera logg</button>
-    <button class="btn-ghost" id="downloadLogBtn" type="button">Ladda ner .txt</button>
+    <button class="btn-secondary" id="newRoundBtn" type="button" data-i18n="new_round_btn">Ny runda</button>
+    <button class="btn-secondary" id="clearScoresBtn" type="button" data-i18n="clear_scores_btn">Rensa resultat</button>
+    <button class="btn-primary" id="saveHistoryBtn" type="button" data-i18n="save_history_btn">Spara runda i historik</button>
+    <button class="btn-ghost" id="shareBtn" type="button" data-i18n="share_btn">Dela</button>
+    <button class="btn-ghost" id="copyLogBtn" type="button" data-i18n="copy_log_btn">Kopiera logg</button>
+    <button class="btn-ghost" id="downloadLogBtn" type="button" data-i18n="download_log_btn">Ladda ner .txt</button>
   </div>
 
   <details class="panel" id="logPanel">
-    <summary>Textlogg (förhandsvisning)</summary>
+    <summary data-i18n="log_panel_title">Textlogg (förhandsvisning)</summary>
     <div class="panel-body">
       <pre class="log" id="logPreview"></pre>
     </div>
   </details>
 
   <details class="panel" id="statsPanel">
-    <summary>Statistik</summary>
+    <summary data-i18n="stats_panel_title">Statistik</summary>
     <div class="panel-body">
-      <div id="statsEmpty" class="empty-history">Spara några rundor för att se statistik.</div>
+      <div id="statsEmpty" class="empty-history" data-i18n="stats_empty">Spara några rundor för att se statistik.</div>
       <div id="statsContent" style="display:none;">
         <div class="stats-block">
-          <div class="stats-title">Säsongen i siffror</div>
+          <div class="stats-title" data-i18n="season_stats_title">Säsongen i siffror</div>
           <div class="season-grid" id="seasonGrid"></div>
         </div>
         <div class="stats-block">
-          <div class="stats-title">Resultat mot par per runda</div>
+          <div class="stats-title" data-i18n="trend_chart_title">Resultat mot par per runda</div>
           <canvas id="trendChart" width="600" height="220"></canvas>
           <div class="stats-legend" id="trendLegend"></div>
         </div>
         <div class="stats-block">
-          <div class="stats-title">Snittresultat per klubb</div>
+          <div class="stats-title" data-i18n="course_chart_title">Snittresultat per klubb</div>
           <canvas id="courseChart" width="600" height="220"></canvas>
         </div>
       </div>
@@ -552,35 +572,40 @@
   </details>
 
   <details class="panel" id="historyPanel">
-    <summary>Sparade rundor (<span id="historyCount">0</span>)</summary>
+    <summary><span data-i18n="history_panel_title">Sparade rundor</span> (<span id="historyCount">0</span>)</summary>
     <div class="panel-body">
       <div class="history-filter-row" id="historyFilterRow" style="display:none;">
-        <label for="courseFilter">Visa bana</label>
+        <label for="courseFilter" data-i18n="history_filter_label">Visa bana</label>
         <select id="courseFilter"></select>
       </div>
       <div id="historyBody">
-        <div class="empty-history">Inga sparade rundor än.</div>
+        <div class="empty-history" data-i18n="history_empty">Inga sparade rundor än.</div>
       </div>
     </div>
   </details>
 
   <details class="panel" id="backupPanel">
-    <summary>Säkerhetskopia</summary>
+    <summary data-i18n="backup_panel_title">Säkerhetskopia</summary>
     <div class="panel-body">
-      <p class="backup-hint">All data sparas bara i den här webbläsaren. Exportera regelbundet, särskilt inför att byta telefon eller rensa webbläsardata.</p>
+      <p class="backup-hint" data-i18n="backup_hint">All data sparas bara i den här webbläsaren. Exportera regelbundet, särskilt inför att byta telefon eller rensa webbläsardata.</p>
       <div class="backup-btnrow">
-        <button class="btn-secondary" id="exportBackupBtn" type="button">Exportera säkerhetskopia</button>
-        <button class="btn-ghost" id="importBackupBtn" type="button">Återställ från fil</button>
+        <button class="btn-secondary" id="exportBackupBtn" type="button" data-i18n="export_backup_btn">Exportera säkerhetskopia</button>
+        <button class="btn-ghost" id="importBackupBtn" type="button" data-i18n="import_backup_btn">Återställ från fil</button>
         <input type="file" id="importBackupFile" accept="application/json,.json" style="display:none;" />
       </div>
     </div>
   </details>
 
+  <div class="coffee-footnote">
+    <span data-i18n="coffee_footnote">Om du gillar denna app får du gärna tacka mig med att donera en kopp kaffe :)</span>
+    <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
+  </div>
+
   <div class="confirm-inline" id="confirmImport">
-    <span id="confirmImportText">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
+    <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
     <div class="btns">
-      <button class="btn-secondary" id="cancelImportBtn" type="button">Avbryt</button>
-      <button class="btn-danger" id="confirmImportBtn" type="button">Ja, återställ</button>
+      <button class="btn-secondary" id="cancelImportBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmImportBtn" type="button" data-i18n="confirm_import_btn">Ja, återställ</button>
     </div>
   </div>
 
@@ -600,11 +625,11 @@
 
   <div id="summaryModal" class="modal-overlay" style="display:none;">
     <div class="modal-card">
-      <div class="modal-title">Match klar!</div>
+      <div class="modal-title" data-i18n="match_done_title">Match klar!</div>
       <div id="summaryBody" class="summary-body"></div>
       <div class="modal-btns">
-        <button class="btn-secondary" id="summaryCancelBtn" type="button">Avbryt</button>
-        <button class="btn-primary" id="summarySaveBtn" type="button">Spara &amp; stäng</button>
+        <button class="btn-secondary" id="summaryCancelBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+        <button class="btn-primary" id="summarySaveBtn" type="button" data-i18n="summary_save_btn">Spara &amp; stäng</button>
       </div>
     </div>
   </div>
@@ -660,7 +685,103 @@
   var STORAGE_PROFILES = 'golf-player-profiles';
   var STORAGE_SOUND = 'golf-sound-enabled';
   var STORAGE_THEME = 'golf-theme';
+  var STORAGE_LANG = 'golf-lang';
   var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
+
+  // ---- internationalization (i18n) ----
+  var SUPPORTED_LANGS = ['sv', 'no', 'da', 'fi', 'is', 'en', 'es', 'fr', 'it', 'de'];
+  var i18nStrings = {};
+  var i18nNames = {};
+  var i18nLoaded = false;
+
+  function detectOSLanguage() {
+    var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'sv'];
+    for (var i = 0; i < langs.length; i++) {
+      var code = (langs[i] || '').toLowerCase().split('-')[0];
+      // Norwegian can appear as 'nb' (bokmål) or 'nn' (nynorsk); both map to our 'no'
+      if (code === 'nb' || code === 'nn') code = 'no';
+      if (SUPPORTED_LANGS.indexOf(code) !== -1) return code;
+    }
+    return 'sv';
+  }
+
+  var currentLang = 'sv';
+  try {
+    var savedLang = localStorage.getItem(STORAGE_LANG);
+    currentLang = (savedLang && SUPPORTED_LANGS.indexOf(savedLang) !== -1) ? savedLang : detectOSLanguage();
+  } catch (e) { currentLang = detectOSLanguage(); }
+
+  function loadTranslations() {
+    return fetch('i18n.json')
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (data) {
+        if (data && data.strings) {
+          i18nStrings = data.strings;
+          i18nNames = data.names || {};
+          i18nLoaded = true;
+          applyTranslations();
+          renderLanguageOptions();
+        }
+      })
+      .catch(function () {
+        // offline on first load with nothing cached yet — UI stays in Swedish (baked into the HTML) until this can load.
+      });
+  }
+
+  function t(key, vars) {
+    var entry = i18nStrings[key];
+    var text = entry ? (entry[currentLang] || entry.en || entry.sv) : null;
+    if (!text) return key;
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        text = text.replace('{' + k + '}', vars[k]);
+      });
+    }
+    return text;
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      var text = t(key);
+      if (text !== key) el.textContent = text;
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-title');
+      var text = t(key);
+      if (text !== key) el.title = text;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-placeholder');
+      var text = t(key);
+      if (text !== key) el.placeholder = text;
+    });
+    document.documentElement.lang = currentLang;
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    renderHistory();
+  }
+
+  function setLanguage(lang) {
+    if (SUPPORTED_LANGS.indexOf(lang) === -1) return;
+    currentLang = lang;
+    try { localStorage.setItem(STORAGE_LANG, lang); } catch (e) {}
+    applyTranslations();
+  }
+
+  function renderLanguageOptions() {
+    var sel = document.getElementById('langSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    SUPPORTED_LANGS.forEach(function (code) {
+      var opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = i18nNames[code] || code;
+      if (code === currentLang) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
 
   // Course/slope data now lives in courses.json (loaded below) instead of being
   // hardcoded here, so the club database can grow without touching app logic.
@@ -762,6 +883,7 @@
     return 'dbogey';
   }
   function pad(s, n) { s = String(s); while (s.length < n) s += ' '; return s; }
+  function playerLabel(p) { return t('player_n', { n: p + 1 }); }
 
   // ---- sound & haptic feedback ----
   var soundEnabled = true;
@@ -851,20 +973,20 @@
     var colWidth = 11;
     var lines = [];
     lines.push('GOLFRUNDA — 9 HÅL, PAR 3');
-    if (label) lines.push('Bana: ' + label);
-    lines.push('Datum: ' + date + '    Starttid: ' + startTime);
+    if (label) lines.push(t('log_club_label') + label);
+    lines.push(t('log_date_label') + date + '    ' + t('time_label') + ': ' + startTime);
     if (hasHcp) {
       var hcpInfo = players.map(function (name, i) {
         var hc = handicaps[i] ? handicaps[i] : '-';
         var ex = Number(extras[i]) || 0;
-        return (name || ('Spelare ' + (i + 1))) + ': HCP ' + hc + ', ' + ex + ' slag';
+        return (name || (playerLabel(i))) + ': HCP ' + hc + ', ' + ex + ' ' + t('summary_strokes_suffix');
       }).join('  ·  ');
       lines.push(hcpInfo);
     }
     lines.push('');
     var idxColWidth = hasHcp ? 6 : 0;
-    var header = pad('HÅL', 8) + pad('PAR', 6) + (hasHcp ? pad('IDX', idxColWidth) : '');
-    players.forEach(function (name, i) { header += pad(name || ('Spelare ' + (i + 1)), colWidth); });
+    var header = pad(t('log_hole_label'), 8) + pad('PAR', 6) + (hasHcp ? pad('IDX', idxColWidth) : '');
+    players.forEach(function (name, i) { header += pad(name || (playerLabel(i)), colWidth); });
     lines.push(header);
     lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
     for (var h = 0; h < HOLES; h++) {
@@ -878,8 +1000,8 @@
       lines.push(row);
     }
     lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
-    var totalRow = pad('TOTALT', 8) + pad(PAR * HOLES, 6) + (hasHcp ? pad('', idxColWidth) : '');
-    var relRow = pad('VS PAR', 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
+    var totalRow = pad(t('log_total_label'), 8) + pad(PAR * HOLES, 6) + (hasHcp ? pad('', idxColWidth) : '');
+    var relRow = pad(t('log_vspar_label'), 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
     players.forEach(function (name, p) {
       var sum = sumArr(scores[p]);
       var played = playedCount(scores[p]);
@@ -889,7 +1011,7 @@
     lines.push(totalRow);
     lines.push(relRow);
     if (hasHcp) {
-      var nettoRow = pad('NETTO', 8) + pad('', 6) + pad('', idxColWidth);
+      var nettoRow = pad(t('log_netto_label'), 8) + pad('', 6) + pad('', idxColWidth);
       players.forEach(function (name, p) {
         var sum = sumArr(scores[p]);
         var played = playedCount(scores[p]);
@@ -904,7 +1026,7 @@
       lines.push('(* = extra slag på hålet, netto = resultat mot personligt par)');
     }
     lines.push('');
-    lines.push('Loggat: ' + new Date().toISOString().slice(0, 16).replace('T', ' '));
+    lines.push(t('log_logged_label') + new Date().toISOString().slice(0, 16).replace('T', ' '));
     return lines.join('\n');
   }
 
@@ -1116,9 +1238,9 @@
       var input = document.createElement('input');
       input.type = 'text';
       input.value = name;
-      input.placeholder = 'Spelare ' + (p + 1);
+      input.placeholder = playerLabel(p);
       input.setAttribute('list', 'knownPlayers');
-      input.setAttribute('aria-label', 'Namn spelare ' + (p + 1));
+      input.setAttribute('aria-label', t('aria_player_name', { n: p + 1 }));
       input.addEventListener('input', function (e) {
         state.players[p] = e.target.value;
         renderNameCells();
@@ -1133,7 +1255,7 @@
           if (hcpEl) hcpEl.value = profile.handicap;
           persistRound();
           render();
-          if (profile.handicap) showToast('HCP ifyllt automatiskt för ' + profile.displayName);
+          if (profile.handicap) showToast(t('toast_hcp_autofilled', { name: profile.displayName }));
         }
         // remember the name itself even if no HCP was entered, so it shows up
         // as an autocomplete suggestion and can be recognized next round
@@ -1146,7 +1268,7 @@
       removeBtn.type = 'button';
       removeBtn.className = 'remove-player-btn';
       removeBtn.textContent = '×';
-      removeBtn.setAttribute('aria-label', 'Ta bort spelare ' + (p + 1));
+      removeBtn.setAttribute('aria-label', t('aria_remove_player', { n: p + 1 }));
       removeBtn.disabled = state.players.length <= MIN_PLAYERS;
       removeBtn.addEventListener('click', function () {
         if (state.players.length <= MIN_PLAYERS) return;
@@ -1158,7 +1280,7 @@
         rebuildPlayerRows();
         renderPlayerFields();
         render();
-        showToast('Spelare borttagen');
+        showToast(t('toast_player_removed'));
       });
       row.appendChild(removeBtn);
 
@@ -1187,14 +1309,14 @@
       extraRow.appendChild(hcpInput);
 
       var genderLabel = document.createElement('label');
-      genderLabel.textContent = 'Kön';
+      genderLabel.textContent = t('gender_label');
       genderLabel.setAttribute('for', 'gender' + p);
       extraRow.appendChild(genderLabel);
 
       var genderSelect = document.createElement('select');
       genderSelect.id = 'gender' + p;
       genderSelect.className = 'gender-select';
-      genderSelect.setAttribute('aria-label', 'Kön spelare ' + (p + 1) + ' (för automatisk uträkning)');
+      genderSelect.setAttribute('aria-label', t('aria_player_gender', { n: p + 1 }));
       ['', 'M', 'K'].forEach(function (g) {
         var opt = document.createElement('option');
         opt.value = g;
@@ -1209,7 +1331,7 @@
       extraRow.appendChild(genderSelect);
 
       var exLabel = document.createElement('label');
-      exLabel.textContent = 'Extraslag';
+      exLabel.textContent = t('extra_label');
       exLabel.setAttribute('for', 'extra' + p);
       extraRow.appendChild(exLabel);
 
@@ -1229,36 +1351,36 @@
       calcBtn.type = 'button';
       calcBtn.className = 'calc-btn';
       calcBtn.textContent = '🧮';
-      calcBtn.title = 'Räkna ut extraslag automatiskt (kräver HCP, kön och en bana med känd slopetabell)';
+      calcBtn.title = t('calc_btn_title');
       calcBtn.addEventListener('click', function () {
         var table = lookupSlopeTable(state.club);
         if (!table) {
-          showToast('Ingen slopetabell känd för "' + (state.club || 'den här klubben') + '"');
+          showToast(t('toast_no_slope_table', { club: state.club || t('club_label') }));
           return;
         }
         var g = state.genders[p];
         if (!g) {
-          showToast('Välj kön för spelaren först');
+          showToast(t('toast_select_gender'));
           return;
         }
         if (!state.handicaps[p]) {
-          showToast('Fyll i HCP för spelaren först');
+          showToast(t('toast_fill_hcp'));
           return;
         }
         var courseData = g === 'M' ? table.men : table.women;
         if (!courseData) {
-          showToast('Verifierad slopedata saknas för ' + (g === 'M' ? 'herrar' : 'damer') + ' på den här banan');
+          showToast(t('toast_no_verified_data', { gender: g === 'M' ? t('gender_men_word') : t('gender_women_word') }));
           return;
         }
         var result = computeCourseHandicap(state.handicaps[p], courseData);
         if (result == null) {
-          showToast('Kunde inte tolka HCP-värdet');
+          showToast(t('toast_cant_parse_hcp'));
           return;
         }
         state.extras[p] = String(result);
         persistRound();
         render();
-        showToast('Extraslag uträknat: ' + result + ' (' + table.name + ')');
+        showToast(t('toast_extra_calculated', { result: result, course: table.name }));
       });
       extraRow.appendChild(calcBtn);
 
@@ -1270,7 +1392,7 @@
   function renderNameCells() {
     state.players.forEach(function (name, p) {
       var cell = document.getElementById('nameCell' + p);
-      if (cell) cell.textContent = name || ('Spelare ' + (p + 1));
+      if (cell) cell.textContent = name || (playerLabel(p));
     });
   }
 
@@ -1286,7 +1408,7 @@
       var nameTd = document.createElement('td');
       nameTd.className = 'name-cell';
       nameTd.id = 'nameCell' + p;
-      nameTd.textContent = name || ('Spelare ' + (p + 1));
+      nameTd.textContent = name || (playerLabel(p));
       nameTd.style.color = PLAYER_COLORS[p % PLAYER_COLORS.length];
       tr.appendChild(nameTd);
 
@@ -1349,7 +1471,7 @@
       nettoTr.style.display = 'none';
       var nettoLabelTd = document.createElement('td');
       nettoLabelTd.className = 'rowlabel netto-label';
-      nettoLabelTd.textContent = 'Netto';
+      nettoLabelTd.textContent = t('netto_label');
       nettoTr.appendChild(nettoLabelTd);
       for (var hn = 0; hn < HOLES; hn++) {
         var nettoTd = document.createElement('td');
@@ -1405,7 +1527,7 @@
       if (totalCell) {
         var html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - played * PAR) + '</div>' : '');
         if (extra > 0 && played > 0) {
-          html += '<div class="relpar" style="color:#2f5233;">Netto ' + diffLabel(sum - netParTotal) + '</div>';
+          html += '<div class="relpar" style="color:#2f5233;">' + t('netto_label') + ' ' + diffLabel(sum - netParTotal) + '</div>';
         }
         totalCell.innerHTML = html;
       }
@@ -1456,7 +1578,7 @@
       } else {
         diff = sum - played * PAR;
       }
-      return { name: name || ('Spelare ' + (p + 1)), played: played, diff: diff };
+      return { name: name || (playerLabel(p)), played: played, diff: diff };
     }).filter(Boolean);
 
     if (contenders.length === 0) {
@@ -1469,17 +1591,17 @@
 
     banner.style.display = 'flex';
     if (leaders.length === contenders.length && contenders.length > 1) {
-      banner.innerHTML = '<span class="leader-icon">⛳</span> Jämnt läge — alla på ' + diffLabel(minDiff) + ' (efter ' + maxPlayed + ' hål)';
+      banner.innerHTML = '<span class="leader-icon">⛳</span> ' + t('leader_even', { diff: diffLabel(minDiff), holes: maxPlayed });
     } else if (leaders.length > 1) {
-      banner.innerHTML = '<span class="leader-icon">🏆</span> Delad ledning: ' + leaders.map(function (l) { return l.name; }).join(' & ') + ' (' + diffLabel(minDiff) + ')';
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_shared', { names: leaders.map(function (l) { return l.name; }).join(' & '), diff: diffLabel(minDiff) });
     } else {
-      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + leaders[0].name + ' leder (' + diffLabel(minDiff) + ', efter ' + leaders[0].played + ' hål)';
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_single', { name: leaders[0].name, diff: diffLabel(minDiff), holes: leaders[0].played });
     }
   }
 
   var courseFilterValue = '__all__';
 
-  function courseKey(r) { var label = r.club || r.course; return (label && label.trim()) || 'Okänd klubb'; }
+  function courseKey(r) { var label = r.club || r.course; return (label && label.trim()) || t('unknown_club'); }
 
   function renderCourseFilterOptions() {
     var courses = Array.from(new Set(roundHistory.map(courseKey)));
@@ -1489,7 +1611,7 @@
     courseFilter.innerHTML = '';
     var allOpt = document.createElement('option');
     allOpt.value = '__all__';
-    allOpt.textContent = 'Alla banor';
+    allOpt.textContent = t('filter_all_courses');
     courseFilter.appendChild(allOpt);
     courses.forEach(function (c) {
       var opt = document.createElement('option');
@@ -1509,7 +1631,7 @@
           entries.push({
             date: r.date,
             savedAt: r.savedAt || r.date,
-            name: name || ('Spelare ' + (p + 1)),
+            name: name || (playerLabel(p)),
             diff: sumArr(r.scores[p]) - PAR * HOLES
           });
         }
@@ -1691,16 +1813,16 @@
     if (!grid) return;
     var s = computeSeasonSummary();
     var cards = [];
-    cards.push({ value: String(s.roundsCount), label: 'Sparade rundor' });
+    cards.push({ value: String(s.roundsCount), label: t('season_rounds') });
     cards.push({
       value: s.avgDiff == null ? '–' : diffLabel(Math.round(s.avgDiff * 10) / 10),
-      label: 'Snitt mot par / runda'
+      label: t('season_avg')
     });
     cards.push({
       value: s.best ? diffLabel(s.best.diff) : '–',
-      label: s.best ? ('Bästa runda — ' + s.best.name + (s.best.club ? ' (' + s.best.club + ')' : '')) : 'Bästa runda'
+      label: s.best ? (t('season_best') + ' — ' + s.best.name + (s.best.club ? ' (' + s.best.club + ')' : '')) : t('season_best')
     });
-    cards.push({ value: String(s.birdieOrBetter), label: 'Birdies eller bättre (' + s.holesPlayed + ' hål spelade)' });
+    cards.push({ value: String(s.birdieOrBetter), label: t('season_birdies') + ' (' + s.holesPlayed + ' ' + t('season_holes_played') + ')' });
 
     grid.innerHTML = '';
     cards.forEach(function (c) {
@@ -1801,7 +1923,7 @@
 
       rounds.forEach(function (r) {
         var log = buildLog(r);
-        var namesLabel = r.players.map(function (n, i) { return n || ('Spelare ' + (i + 1)); }).join(' · ');
+        var namesLabel = r.players.map(function (n, i) { return n || (playerLabel(i)); }).join(' · ');
         var variantLabel = r.courseVariant ? (' · ' + r.courseVariant) : '';
         var div = document.createElement('div');
         div.className = 'history-item';
@@ -1833,7 +1955,7 @@
   function copyText(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
-        showToast('Kopierat till urklipp');
+        showToast(t('toast_copied'));
       }, function () { fallbackCopy(text); });
     } else {
       fallbackCopy(text);
@@ -1849,9 +1971,9 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showToast('Kopierat till urklipp');
+      showToast(t('toast_copied'));
     } catch (e) {
-      showToast('Kunde inte kopiera');
+      showToast(t('toast_copy_failed'));
     }
   }
   function downloadText(text, filename, mime) {
@@ -1880,7 +2002,7 @@
       state.strokeIndex = known.strokeIndex.slice();
       persistRound();
       render();
-      showToast('Slagindex ifyllt för ' + known.name);
+      showToast(t('toast_stroke_index_filled', { course: known.name }));
     }
   });
 
@@ -1902,7 +2024,7 @@
   function getPosition() {
     return new Promise(function (resolve, reject) {
       if (!navigator.geolocation) {
-        reject(new Error('Platstjänster stöds inte i den här webbläsaren.'));
+        reject(new Error(t('geo_not_supported')));
         return;
       }
       navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -1961,12 +2083,12 @@
   function findNearbyClubs() {
     locateBtn.disabled = true;
     locateBtn.classList.add('loading');
-    setCourseStatus('Hämtar din position …');
+    setCourseStatus(t('geo_fetching_position'));
     clubResultsSelect.style.display = 'none';
 
     getPosition().then(function (pos) {
       var lat = pos.coords.latitude, lon = pos.coords.longitude;
-      setCourseStatus('Söker golfklubbar i närheten …');
+      setCourseStatus(t('geo_searching_clubs'));
       return overpassGolfCourses(lat, lon, 25000).then(function (candidates) {
         // dedupe by name, keep nearest occurrence of each
         var seen = {};
@@ -1976,7 +2098,7 @@
         });
         if (deduped.length === 0) {
           setCourseStatus('Ingen golfklubb hittades inom 25 km. Fyll i manuellt.', 'error');
-          showToast('Ingen klubb hittades i närheten');
+          showToast(t('toast_no_club_found'));
           return;
         }
         lastClubResults = deduped.slice(0, 8);
@@ -1995,13 +2117,13 @@
         setCourseStatus(lastClubResults.length + ' klubbar hittade — välj i listan nedan', 'success');
       });
     }).catch(function (err) {
-      var msg = 'Kunde inte hämta position.';
+      var msg = t('geo_could_not_fetch');
       if (err && err.code === 1) msg = 'Platsåtkomst nekad. Tillåt plats för Safari i Inställningar.';
-      else if (err && err.code === 2) msg = 'Positionen kunde inte fastställas.';
-      else if (err && err.code === 3) msg = 'Det tog för lång tid att hämta positionen.';
+      else if (err && err.code === 2) msg = t('geo_could_not_determine');
+      else if (err && err.code === 3) msg = t('geo_timeout');
       else if (err && err.message) msg = err.message;
       setCourseStatus(msg, 'error');
-      showToast('Kunde inte hitta klubbar automatiskt');
+      showToast(t('toast_locate_failed'));
     }).finally(function () {
       locateBtn.disabled = false;
       locateBtn.classList.remove('loading');
@@ -2017,8 +2139,8 @@
     var known = lookupCourseStrokeIndex(chosen.name);
     if (known) state.strokeIndex = known.strokeIndex.slice();
     render();
-    setCourseStatus('Vald klubb: ' + chosen.name, 'success');
-    showToast(known ? 'Klubb & slagindex ifyllt: ' + chosen.name : 'Klubb ifylld: ' + chosen.name);
+    setCourseStatus(t('geo_selected_club', { club: chosen.name }), 'success');
+    showToast(known ? t('toast_club_and_index_filled', { club: chosen.name }) : t('toast_club_filled', { club: chosen.name }));
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
@@ -2042,7 +2164,7 @@
     rebuildPlayerRows();
     renderPlayerFields();
     render();
-    showToast('Spelare tillagd');
+    showToast(t('toast_player_added'));
   });
 
   document.getElementById('newRoundBtn').addEventListener('click', function () {
@@ -2060,7 +2182,7 @@
     rebuildPlayerRows();
     renderPlayerFields();
     render();
-    showToast('Ny runda startad');
+    showToast(t('toast_new_round_started'));
   });
 
   document.getElementById('clearScoresBtn').addEventListener('click', function () {
@@ -2074,7 +2196,7 @@
     state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
     document.getElementById('confirmClear').classList.remove('show');
     render();
-    showToast('Resultat rensade');
+    showToast(t('toast_scores_cleared'));
   });
   function performSaveToHistory() {
     var id = state.date + '_' + state.startTime + '_' + Date.now();
@@ -2092,7 +2214,7 @@
     roundHistory = [entry].concat(roundHistory).slice(0, 50);
     persistHistory();
     renderHistory();
-    showToast('Runda sparad i historik');
+    showToast(t('toast_round_saved'));
   }
 
   function computeStandings() {
@@ -2110,7 +2232,7 @@
       var netDiff = played > 0 ? sum - netParTotal : null;
       var rankMetric = played > 0 ? (extra > 0 ? netDiff : grossDiff) : null;
       return {
-        name: name || ('Spelare ' + (p + 1)), played: played, sum: sum,
+        name: name || (playerLabel(p)), played: played, sum: sum,
         grossDiff: grossDiff, netDiff: netDiff, hasExtra: extra > 0, rankMetric: rankMetric
       };
     }).sort(function (a, b) {
@@ -2129,7 +2251,7 @@
     if (!allComplete) {
       var warn = document.createElement('div');
       warn.className = 'summary-warning';
-      warn.textContent = 'Obs: inte alla hål är ifyllda än — sparar det du hunnit mata in.';
+      warn.textContent = t('summary_incomplete_warning');
       body.appendChild(warn);
     }
     standings.forEach(function (s, i) {
@@ -2138,8 +2260,8 @@
       row.className = 'summary-row' + (isWinner ? ' summary-winner' : '');
       var place = s.played > 0 ? (i + 1) + '.' : '—';
       var scoreText = s.played > 0
-        ? s.sum + ' slag (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  Netto ' + diffLabel(s.netDiff) : '')
-        : 'Inget resultat';
+        ? s.sum + ' ' + t('summary_strokes_suffix') + ' (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  ' + t('netto_label') + ' ' + diffLabel(s.netDiff) : '')
+        : t('summary_no_result');
       row.innerHTML =
         '<span class="summary-place">' + place + '</span>' +
         '<span class="summary-name">' + (isWinner ? '🏆 ' : '') + s.name + '</span>' +
@@ -2229,7 +2351,7 @@
       ctx.textAlign = 'left';
       ctx.font = '700 13px Bitter, serif';
       ctx.fillStyle = PLAYER_COLORS[p % PLAYER_COLORS.length];
-      var label = name || ('Spelare ' + (p + 1));
+      var label = name || (playerLabel(p));
       ctx.fillText(label.length > 14 ? label.slice(0, 13) + '…' : label, 20, y);
 
       ctx.font = '600 12px IBM Plex Mono, monospace';
@@ -2273,11 +2395,11 @@
         return navigator.share({ title: title, text: text });
       }
       copyText(text);
-      showToast('Delning stöds inte här — loggen kopierad istället');
+      showToast(t('toast_share_unsupported'));
     }).catch(function (err) {
       if (err && err.name === 'AbortError') return; // user cancelled the share sheet
       copyText(text);
-      showToast('Kunde inte dela — loggen kopierad istället');
+      showToast(t('toast_share_failed'));
     });
   });
 
@@ -2296,12 +2418,16 @@
   document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
   document.getElementById('soundToggleBtn').addEventListener('click', function () {
     setSoundEnabled(!soundEnabled);
-    showToast(soundEnabled ? 'Ljud vid birdie/bogey på' : 'Ljud vid birdie/bogey av');
+    showToast(soundEnabled ? t('toast_sound_on') : t('toast_sound_off'));
   });
 
   applyTheme(currentTheme);
   document.getElementById('themeToggleBtn').addEventListener('click', function () {
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  });
+
+  document.getElementById('langSelect').addEventListener('change', function (e) {
+    setLanguage(e.target.value);
   });
 
   // ---- quick score entry bar ----
@@ -2331,7 +2457,7 @@
     var payload = buildBackupPayload();
     var stamp = todayISO();
     downloadText(JSON.stringify(payload, null, 2), 'golfapp-backup_' + stamp + '.json', 'application/json');
-    showToast('Säkerhetskopia nedladdad');
+    showToast(t('toast_backup_downloaded'));
   });
 
   var pendingImport = null;
@@ -2351,11 +2477,11 @@
       try {
         data = JSON.parse(reader.result);
       } catch (err) {
-        showToast('Filen kunde inte läsas — är det en giltig säkerhetskopia?');
+        showToast(t('toast_backup_invalid_file'));
         return;
       }
       if (!data || (!Array.isArray(data.history) && !data.playerProfiles)) {
-        showToast('Filen ser inte ut som en säkerhetskopia från appen');
+        showToast(t('toast_backup_not_recognized'));
         return;
       }
       pendingImport = data;
@@ -2365,7 +2491,7 @@
       document.getElementById('confirmImport').classList.add('show');
     };
     reader.onerror = function () {
-      showToast('Kunde inte läsa filen');
+      showToast(t('toast_backup_read_failed'));
     };
     reader.readAsText(file);
   });
@@ -2397,7 +2523,7 @@
     renderKnownPlayersList();
     render();
     renderHistory();
-    showToast('Säkerhetskopia återställd');
+    showToast(t('toast_backup_restored'));
   });
 
   document.getElementById('parTotalLabel').textContent = PAR * HOLES;
@@ -2409,6 +2535,8 @@
   render();
   renderHistory();
   loadCourseDatabase();
+  renderLanguageOptions();
+  loadTranslations();
 })();
 </script>
 <script>
