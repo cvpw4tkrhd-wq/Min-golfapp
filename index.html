@@ -29,12 +29,12 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; }
   :root {
-    --bg-stripe-a: #1c3e2d;
-    --bg-stripe-b: #1a3928;
+    --bg-stripe-a: #2d5a3d;
+    --bg-stripe-b: #2a5537;
     --body-text: #f2efe4;
     --header-title: #f7f4e9;
     --header-subtitle: #a9c2ab;
-    --field-bg: repeating-linear-gradient(100deg, #eef6ea 0px, #eef6ea 16px, #e3f0da 16px, #e3f0da 32px);
+    --field-bg: #eef3e6;
   }
   body.theme-light {
     --bg-stripe-a: #eef1e8;
@@ -193,7 +193,7 @@
     overflow-x: auto;
   }
   table.score { border-collapse: collapse; width: 100%; min-width: 560px; }
-  table.score th, table.score td { text-align: center; padding: 6px 4px; }
+  table.score th, table.score td { text-align: center; padding: 6px 2px; }
   .rowlabel {
     text-align: left !important; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
     letter-spacing: 0.06em; color: #6b6552; text-transform: uppercase; padding-left: 6px !important; white-space: nowrap;
@@ -213,11 +213,17 @@
     border-radius: 50%; background: #d8d0b8; color: #6b6552; font-size: 9px; margin-left: 4px; cursor: help;
   }
   input.hcpindex {
-    width: 26px; height: 24px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    width: 20px; height: 24px; text-align: center; font-family: 'IBM Plex Mono', monospace;
     font-size: 12px; font-weight: 600; color: #8a2f24; background: #fffdf7;
     border: 1px solid #d8d0b8; border-radius: 4px; padding: 0;
   }
   input.hcpindex:focus { outline: none; border-color: #8a2f24; }
+  input.parinput {
+    width: 20px; height: 24px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 700; color: #2b2b2b; background: #fffdf7;
+    border: 1px solid #d8d0b8; border-radius: 4px; padding: 0;
+  }
+  input.parinput:focus { outline: none; border-color: #2f5233; }
   .hcp-legend {
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; text-align: center;
     margin-top: 8px;
@@ -263,7 +269,7 @@
   .relpar { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8a2f24; }
 
   input.scoreinput {
-    width: 34px; height: 34px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    width: 17px; height: 34px; text-align: center; font-family: 'IBM Plex Mono', monospace;
     font-size: 15px; font-weight: 600; color: #2b2b2b; background: #fffdf7;
     border: 1.5px solid #cfc7ab; border-radius: 4px; padding: 0;
   }
@@ -281,7 +287,7 @@
 
   .hole-marker {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 22px; height: 22px; border-radius: 50%;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 12px;
     border: 2px solid transparent; box-sizing: border-box;
     transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
   }
@@ -469,7 +475,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.36 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.39 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -924,6 +930,24 @@
     var raw = n * (table.slope / 113) + (table.cr - table.par);
     return Math.max(0, Math.round(raw));
   }
+  function autoCalcExtraForPlayer(p, silent) {
+    var table = lookupSlopeTable(state.club);
+    if (!table) { if (!silent) showToast(t('toast_no_slope_table', { club: state.club || t('club_label') })); return; }
+    var g = state.genders[p];
+    if (!g) { if (!silent) showToast(t('toast_select_gender')); return; }
+    if (!state.handicaps[p]) { if (!silent) showToast(t('toast_fill_hcp')); return; }
+    var courseData = g === 'M' ? table.men : table.women;
+    if (!courseData) { if (!silent) showToast(t('toast_no_verified_data', { gender: g === 'M' ? t('gender_men_word') : t('gender_women_word') })); return; }
+    var result = computeCourseHandicap(state.handicaps[p], courseData);
+    if (result == null) { if (!silent) showToast(t('toast_cant_parse_hcp')); return; }
+    state.extras[p] = String(result);
+    persistRound();
+    render();
+    showToast(t('toast_extra_calculated', { result: result, course: table.name }));
+  }
+  function autoCalcExtraForAllPlayers() {
+    state.players.forEach(function (name, p) { autoCalcExtraForPlayer(p, true); });
+  }
 
   function todayISO() {
     var d = new Date();
@@ -999,7 +1023,11 @@
     return 'dbogey';
   }
   function pad(s, n) { s = String(s); while (s.length < n) s += ' '; return s; }
-  function playerLabel(p) { return t('player_n', { n: p + 1 }); }
+  function playerLabel(p) {
+    var s = t('player_n', { n: p + 1 });
+    if (!s || s === 'player_n' || s.indexOf('{n}') !== -1) return 'Spelare ' + (p + 1);
+    return s;
+  }
 
   // ---- sound & haptic feedback ----
   var soundEnabled = true;
@@ -1542,6 +1570,8 @@
       hcpLabel.setAttribute('for', 'hcp' + p);
       extraRow.appendChild(hcpLabel);
 
+      function autoCalcExtra(silent) { autoCalcExtraForPlayer(p, silent); }
+
       var hcpInput = document.createElement('input');
       hcpInput.type = 'text';
       hcpInput.inputMode = 'decimal';
@@ -1554,6 +1584,7 @@
         saveProfileForPlayer(state.players[p], state.handicaps[p]);
         renderKnownPlayersList();
       });
+      hcpInput.addEventListener('blur', function () { autoCalcExtra(true); });
       extraRow.appendChild(hcpInput);
 
       var genderLabel = document.createElement('label');
@@ -1575,6 +1606,7 @@
       genderSelect.addEventListener('change', function (e) {
         state.genders[p] = e.target.value;
         persistRound();
+        autoCalcExtra(true);
       });
       extraRow.appendChild(genderSelect);
 
@@ -1600,36 +1632,7 @@
       calcBtn.className = 'calc-btn';
       calcBtn.textContent = '🧮';
       calcBtn.title = t('calc_btn_title');
-      calcBtn.addEventListener('click', function () {
-        var table = lookupSlopeTable(state.club);
-        if (!table) {
-          showToast(t('toast_no_slope_table', { club: state.club || t('club_label') }));
-          return;
-        }
-        var g = state.genders[p];
-        if (!g) {
-          showToast(t('toast_select_gender'));
-          return;
-        }
-        if (!state.handicaps[p]) {
-          showToast(t('toast_fill_hcp'));
-          return;
-        }
-        var courseData = g === 'M' ? table.men : table.women;
-        if (!courseData) {
-          showToast(t('toast_no_verified_data', { gender: g === 'M' ? t('gender_men_word') : t('gender_women_word') }));
-          return;
-        }
-        var result = computeCourseHandicap(state.handicaps[p], courseData);
-        if (result == null) {
-          showToast(t('toast_cant_parse_hcp'));
-          return;
-        }
-        state.extras[p] = String(result);
-        persistRound();
-        render();
-        showToast(t('toast_extra_calculated', { result: result, course: table.name }));
-      });
+      calcBtn.addEventListener('click', function () { autoCalcExtra(false); });
       extraRow.appendChild(calcBtn);
 
       playersFields.appendChild(extraRow);
@@ -2323,6 +2326,7 @@
         persistRound();
         render();
         updateMapGuide();
+        autoCalcExtraForAllPlayers();
         if (showToastMsg) showToast(t('toast_course_and_holes_filled', { course: known.name, holes: HOLES }));
         return;
       }
@@ -2331,6 +2335,7 @@
       persistRound();
       render();
       updateMapGuide();
+      autoCalcExtraForAllPlayers();
       if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
       return;
     }
@@ -2345,6 +2350,7 @@
     persistRound();
     render();
     updateMapGuide();
+    autoCalcExtraForAllPlayers();
     if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
   }
 
