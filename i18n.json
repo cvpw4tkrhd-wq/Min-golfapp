@@ -383,6 +383,18 @@
       "es": "Índice de golpe rellenado para {course}", "fr": "Index de trou rempli pour {course}", "it": "Indice colpo compilato per {course}",
       "de": "Schlagindex ausgefüllt für {course}"
     },
+    "toast_course_and_holes_filled": {
+      "sv": "{course} ifyllt — bytte till {holes} hål med rätt par/index",
+      "no": "{course} fylt ut — byttet til {holes} hull med riktig par/indeks",
+      "da": "{course} udfyldt — skiftede til {holes} huller med korrekt par/indeks",
+      "fi": "{course} täytetty — vaihdettiin {holes} väylään oikealla par/indeksillä",
+      "is": "{course} fyllt út — skipt í {holes} holur með réttu pari/vísitölu",
+      "en": "{course} filled in — switched to {holes} holes with correct par/index",
+      "es": "{course} rellenado — se cambió a {holes} hoyos con par/índice correctos",
+      "fr": "{course} renseigné — passage à {holes} trous avec par/index corrects",
+      "it": "{course} compilato — passato a {holes} buche con par/indice corretti",
+      "de": "{course} ausgefüllt — auf {holes} Löcher mit korrektem Par/Index umgestellt"
+    },
     "toast_no_club_found": {
       "sv": "Ingen klubb hittades i närheten", "no": "Ingen klubb funnet i nærheten", "da": "Ingen klub fundet i nærheden",
       "fi": "Lähellä ei löytynyt seuraa", "is": "Enginn klúbbur fannst í nágrenninu", "en": "No club found nearby",
@@ -519,9 +531,41 @@
       "sv": "Netto", "no": "Netto", "da": "Netto", "fi": "Netto", "is": "Nettó",
       "en": "Net", "es": "Neto", "fr": "Net", "it": "Netto", "de": "Netto"
     },
+    "map_guide_title": {
+      "sv": "Banguide", "no": "Baneguide", "da": "Baneguide", "fi": "Rataopas", "is": "Vallarleiðsögn",
+      "en": "Course guide", "es": "Guía del campo", "fr": "Guide du parcours", "it": "Guida al percorso", "de": "Platzführer"
+    },
+    "map_hole_label": {
+      "sv": "Hål", "no": "Hull", "da": "Hul", "fi": "Väylä", "is": "Hola",
+      "en": "Hole", "es": "Hoyo", "fr": "Trou", "it": "Buca", "de": "Loch"
+    },
     "player_n": {
       "sv": "Spelare {n}", "no": "Spiller {n}", "da": "Spiller {n}", "fi": "Pelaaja {n}", "is": "Leikmaður {n}",
       "en": "Player {n}", "es": "Jugador {n}", "fr": "Joueur {n}", "it": "Giocatore {n}", "de": "Spieler {n}"
+    },
+    "holes_toggle_label": {
+      "sv": "Rundlängd", "no": "Runde­lengde", "da": "Runde­længde", "fi": "Kierroksen pituus", "is": "Lengd hrings",
+      "en": "Round length", "es": "Duración de la ronda", "fr": "Longueur du parcours", "it": "Lunghezza del giro", "de": "Rundenlänge"
+    },
+    "holes_9": {
+      "sv": "9 hål", "no": "9 hull", "da": "9 huller", "fi": "9 väylää", "is": "9 holur",
+      "en": "9 holes", "es": "9 hoyos", "fr": "9 trous", "it": "9 buche", "de": "9 Löcher"
+    },
+    "holes_18": {
+      "sv": "18 hål", "no": "18 hull", "da": "18 huller", "fi": "18 väylää", "is": "18 holur",
+      "en": "18 holes", "es": "18 hoyos", "fr": "18 trous", "it": "18 buche", "de": "18 Löcher"
+    },
+    "confirm_holes_switch": {
+      "sv": "Byta rundlängd? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).",
+      "no": "Bytte rundelengde? Nåværende inntasting overskrives (lagre den først hvis du vil beholde den).",
+      "da": "Skift rundelængde? Nuværende indtastning overskrives (gem den først, hvis du vil beholde den).",
+      "fi": "Vaihdetaanko kierroksen pituutta? Nykyiset tiedot ylikirjoitetaan (tallenna ensin, jos haluat säilyttää ne).",
+      "is": "Skipta um lengd hrings? Núverandi innsláttur verður yfirskrifaður (vistaðu hann fyrst ef þú vilt halda honum).",
+      "en": "Switch round length? Current entries will be overwritten (save first if you want to keep them).",
+      "es": "¿Cambiar la duración de la ronda? Los datos actuales se sobrescribirán (guárdalos antes si quieres conservarlos).",
+      "fr": "Changer la longueur du parcours ? Les données actuelles seront écrasées (sauvegardez-les d'abord si besoin).",
+      "it": "Cambiare la lunghezza del giro? I dati attuali verranno sovrascritti (salvali prima se vuoi conservarli).",
+      "de": "Rundenlänge wechseln? Aktuelle Eingaben werden überschrieben (vorher speichern, falls gewünscht)."
     },
     "filter_all_courses": {
       "sv": "Alla banor", "no": "Alle baner", "da": "Alle baner", "fi": "Kaikki radat", "is": "Allir vellir",

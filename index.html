@@ -83,6 +83,13 @@
     padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); margin-bottom: 16px;
   }
   .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 14px; }
+  .holes-toggle-field { margin-bottom: 14px; }
+  .holes-toggle { display: flex; gap: 6px; }
+  .holes-btn {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #6b6552;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px; cursor: pointer;
+  }
+  .holes-btn.active { background: #2f5233; color: #f7f4e9; border-color: #2f5233; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label {
     font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
@@ -327,6 +334,18 @@
   details.panel summary::-webkit-details-marker { display: none; }
   details.panel[open] summary { border-bottom: 1px solid #d8d0b8; }
   .panel-body { padding: 12px 16px 16px; }
+  .map-img {
+    width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5dfc8; margin-bottom: 10px; display: block;
+  }
+  .map-hole-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .map-hole-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase;
+  }
+  #mapHoleSelect {
+    font-family: 'Inter', sans-serif; font-size: 14px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 6px 9px;
+  }
   pre.log {
     font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.5; color: #2b2b2b;
     white-space: pre; overflow-x: auto; margin: 0 0 10px; background: #fffdf7;
@@ -450,7 +469,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.32 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.36 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -473,6 +492,14 @@
   </div>
 
   <div class="meta-card">
+    <div class="field holes-toggle-field">
+      <label data-i18n="holes_toggle_label">Rundlängd</label>
+      <div class="holes-toggle" id="holesToggle">
+        <button type="button" class="holes-btn" data-holes="9" data-i18n="holes_9">9 hål</button>
+        <button type="button" class="holes-btn" data-holes="18" data-i18n="holes_18">18 hål</button>
+      </div>
+    </div>
+
     <div class="meta-row">
       <div class="field">
         <label for="date" data-i18n="date_label">Datum</label>
@@ -499,6 +526,18 @@
     <datalist id="knownPlayers"></datalist>
     <button class="add-player-btn" id="addPlayerBtn" type="button" data-i18n="add_player_btn">+ Lägg till spelare</button>
   </div>
+
+  <details class="panel" id="mapGuidePanel" style="display:none;">
+    <summary data-i18n="map_guide_title">Banguide</summary>
+    <div class="panel-body">
+      <img id="mapOverviewImg" class="map-img" alt="" loading="lazy" style="display:none;" />
+      <div class="map-hole-row">
+        <label for="mapHoleSelect" data-i18n="map_hole_label">Hål</label>
+        <select id="mapHoleSelect"></select>
+      </div>
+      <img id="mapHoleImg" class="map-img" alt="" loading="lazy" style="display:none;" />
+    </div>
+  </details>
 
   <div id="leaderBanner" class="leader-banner" style="display:none;"></div>
 
@@ -547,6 +586,14 @@
     <div class="btns">
       <button class="btn-secondary" id="cancelClearBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
       <button class="btn-danger" id="confirmClearBtn" type="button" data-i18n="confirm_clear_btn">Ja, rensa</button>
+    </div>
+  </div>
+
+  <div class="confirm-inline" id="confirmHoles">
+    <span data-i18n="confirm_holes_switch">Byta rundlängd? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelHolesBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmHolesBtn" type="button" data-i18n="confirm_new_btn">Ja, ny runda</button>
     </div>
   </div>
 
@@ -699,7 +746,28 @@
 <script>
 (function () {
   var HOLES = 9;
-  var PAR = 3;
+  var PAR = 3; // legacy default (used as fallback when a hole's own par is unknown)
+  var parPerHole = [3, 3, 3, 3, 3, 3, 3, 3, 3];
+  function parAt(h) { return (parPerHole && parPerHole[h] != null) ? parPerHole[h] : PAR; }
+  function totalPar() {
+    var sum = 0;
+    for (var h = 0; h < HOLES; h++) sum += parAt(h);
+    return sum;
+  }
+  function defaultParPerHole(n) {
+    var arr = [];
+    for (var i = 0; i < n; i++) arr.push(3);
+    return arr;
+  }
+  // sum of par for the holes that actually have a score entered — correct even
+  // when holes have different pars (a real 18-hole course), unlike played*PAR.
+  function sumParForPlayed(scoresArr, parArr) {
+    var total = 0;
+    for (var h = 0; h < scoresArr.length; h++) {
+      if (scoresArr[h] !== '' && scoresArr[h] != null) total += (parArr && parArr[h] != null) ? parArr[h] : 3;
+    }
+    return total;
+  }
   var MIN_PLAYERS = 1;
   var MAX_PLAYERS = 4;
   var STORAGE_ROUND = 'golf-current-round';
@@ -887,33 +955,38 @@
   }
   function sumArr(arr) { return arr.reduce(function (a, b) { return a + (Number(b) || 0); }, 0); }
   function diffLabel(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; }
-  function defaultStrokeIndex() {
+  function defaultStrokeIndex(n) {
+    n = n || HOLES;
     var arr = [];
-    for (var i = 0; i < HOLES; i++) arr.push(i + 1);
+    for (var i = 0; i < n; i++) arr.push(i + 1);
     return arr;
   }
-  function strokesOnHole(extra, rank) {
+  function defaultStrokeIndexFor(n) { return defaultStrokeIndex(n); }
+  function strokesOnHole(extra, rank, n) {
+    n = n || HOLES;
     extra = Number(extra) || 0;
     if (extra <= 0) return 0;
-    var base = Math.floor(extra / HOLES);
-    var remainder = extra % HOLES;
+    var base = Math.floor(extra / n);
+    var remainder = extra % n;
     return base + (Number(rank) <= remainder ? 1 : 0);
   }
   // Converts whatever numbers are in the "Index" row (the club's own INDX
   // column — could be 1-9, or 1-18/odd-only, or anything) into a relative
   // difficulty rank 1..HOLES, since only the relative order matters for
   // allocating strokes. Ties broken by hole order.
-  function computeStrokeRanks(strokeIndexArr) {
-    var arr = strokeIndexArr && strokeIndexArr.length === HOLES ? strokeIndexArr : defaultStrokeIndex();
+  function computeStrokeRanks(strokeIndexArr, n) {
+    n = n || HOLES;
+    var arr = strokeIndexArr && strokeIndexArr.length === n ? strokeIndexArr : defaultStrokeIndex(n);
     var withIdx = arr.map(function (v, h) { return { h: h, v: (v === '' || v == null) ? (h + 1) : Number(v) }; });
     withIdx.sort(function (a, b) { return a.v - b.v || a.h - b.h; });
     var ranks = [];
     withIdx.forEach(function (item, i) { ranks[item.h] = i + 1; });
     return ranks;
   }
+  function computeStrokeRanksFor(strokeIndexArr, n) { return computeStrokeRanks(strokeIndexArr, n); }
   function netParForHole(strokeIndexArr, extra, h) {
     var ranks = computeStrokeRanks(strokeIndexArr);
-    return PAR + strokesOnHole(extra, ranks[h]);
+    return parAt(h) + strokesOnHole(extra, ranks[h]);
   }
   function scoreClass(val, np) {
     if (val === '' || val == null) return '';
@@ -1069,31 +1142,44 @@
     if (club && variant) return club + ' — ' + variant;
     return club || variant || '';
   }
-  function defaultRound() {
+  function defaultRound(holesCount) {
+    holesCount = holesCount || 9;
+    HOLES = holesCount;
+    parPerHole = defaultParPerHole(holesCount);
     return {
       club: '',
       players: ['', ''],
       handicaps: ['', ''],
       extras: ['', ''],
       genders: ['', ''],
+      holesCount: holesCount,
+      parPerHole: parPerHole.slice(),
       strokeIndex: defaultStrokeIndex(),
       date: todayISO(),
       startTime: nowHM(),
       scores: [Array(HOLES).fill(''), Array(HOLES).fill('')]
     };
   }
+  function syncHolesFromState() {
+    HOLES = state.holesCount || 9;
+    parPerHole = (state.parPerHole && state.parPerHole.length === HOLES) ? state.parPerHole : defaultParPerHole(HOLES);
+    state.parPerHole = parPerHole;
+  }
 
   function buildLog(round) {
     var date = round.date, startTime = round.startTime, players = round.players, scores = round.scores;
     var label = courseLabel(round);
-    var strokeIndex = round.strokeIndex || defaultStrokeIndex();
+    var roundHoles = round.holesCount || 9;
+    var roundPar = (round.parPerHole && round.parPerHole.length === roundHoles) ? round.parPerHole : defaultParPerHole(roundHoles);
+    var roundTotalPar = roundPar.reduce(function (a, v) { return a + v; }, 0);
+    var strokeIndex = (round.strokeIndex && round.strokeIndex.length === roundHoles) ? round.strokeIndex : defaultStrokeIndexFor(roundHoles);
     var extras = round.extras || [];
     var handicaps = round.handicaps || [];
     var hasHcp = extras.some(function (e) { return Number(e) > 0; });
-    var ranks = computeStrokeRanks(strokeIndex);
+    var ranks = computeStrokeRanksFor(strokeIndex, roundHoles);
     var colWidth = 11;
     var lines = [];
-    lines.push('GOLFRUNDA — 9 HÅL, PAR 3');
+    lines.push('GOLFRUNDA — ' + roundHoles + ' HÅL, PAR ' + roundTotalPar);
     if (label) lines.push(t('log_club_label') + label);
     lines.push(t('log_date_label') + date + '    ' + t('time_label') + ': ' + startTime);
     if (hasHcp) {
@@ -1110,24 +1196,24 @@
     players.forEach(function (name, i) { header += pad(name || (playerLabel(i)), colWidth); });
     lines.push(header);
     lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
-    for (var h = 0; h < HOLES; h++) {
-      var row = pad(h + 1, 8) + pad(PAR, 6) + (hasHcp ? pad(strokeIndex[h], idxColWidth) : '');
+    for (var h = 0; h < roundHoles; h++) {
+      var row = pad(h + 1, 8) + pad(roundPar[h], 6) + (hasHcp ? pad(strokeIndex[h], idxColWidth) : '');
       players.forEach(function (name, p) {
         var v = scores[p][h] === '' ? '-' : scores[p][h];
-        var strokes = hasHcp ? strokesOnHole(extras[p], ranks[h]) : 0;
+        var strokes = hasHcp ? strokesOnHole(extras[p], ranks[h], roundHoles) : 0;
         if (strokes > 0 && v !== '-') v += '*'.repeat(strokes);
         row += pad(v, colWidth);
       });
       lines.push(row);
     }
     lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
-    var totalRow = pad(t('log_total_label'), 8) + pad(PAR * HOLES, 6) + (hasHcp ? pad('', idxColWidth) : '');
+    var totalRow = pad(t('log_total_label'), 8) + pad(roundTotalPar, 6) + (hasHcp ? pad('', idxColWidth) : '');
     var relRow = pad(t('log_vspar_label'), 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
     players.forEach(function (name, p) {
       var sum = sumArr(scores[p]);
       var played = playedCount(scores[p]);
       totalRow += pad(sum, colWidth);
-      relRow += pad(played ? diffLabel(sum - played * PAR) : '-', colWidth);
+      relRow += pad(played ? diffLabel(sum - sumParForPlayed(scores[p], roundPar)) : '-', colWidth);
     });
     lines.push(totalRow);
     lines.push(relRow);
@@ -1163,10 +1249,18 @@
     var savedRound = localStorage.getItem(STORAGE_ROUND);
     if (savedRound) {
       var r = JSON.parse(savedRound);
+      state.holesCount = (r.holesCount === 9 || r.holesCount === 18) ? r.holesCount : 9;
+      HOLES = state.holesCount;
+      state.parPerHole = (r.parPerHole && r.parPerHole.length === HOLES) ? r.parPerHole : defaultParPerHole(HOLES);
+      parPerHole = state.parPerHole;
       if (r.players && r.players.length) state.players = r.players;
       if (r.date) state.date = r.date;
       if (r.startTime) state.startTime = r.startTime;
-      if (r.scores && r.scores.length) state.scores = r.scores;
+      if (r.scores && r.scores.length === state.players.length && r.scores[0] && r.scores[0].length === HOLES) {
+        state.scores = r.scores;
+      } else {
+        state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+      }
       if (typeof r.club === 'string') state.club = r.club;
       else if (typeof r.course === 'string') state.club = r.course;
       state.handicaps = (r.handicaps && r.handicaps.length === state.players.length) ? r.handicaps : state.players.map(function () { return ''; });
@@ -1242,34 +1336,62 @@
 
   var hcpIndexInputs = [];
 
-  // ---- build static hole columns in header + par row + stroke-index row (constant regardless of player count) ----
-  for (var h = 0; h < HOLES; h++) {
-    var th = document.createElement('th');
-    th.innerHTML = '<span class="hole-marker" data-hole="' + h + '">' + (h + 1) + '</span>';
-    headRow.insertBefore(th, headRow.lastElementChild);
+  var parIndexInputs = [];
+  function rebuildHoleColumns() {
+    // remove previously-built hole cells (keep the first rowlabel cell and the last total cell)
+    while (headRow.children.length > 2) headRow.removeChild(headRow.children[1]);
+    while (parRow.children.length > 2) parRow.removeChild(parRow.children[1]);
+    while (hcpRow.children.length > 2) hcpRow.removeChild(hcpRow.children[1]);
+    hcpIndexInputs = [];
+    parIndexInputs = [];
 
-    var parTd = document.createElement('td');
-    parTd.textContent = PAR;
-    parRow.insertBefore(parTd, parRow.lastElementChild);
+    for (var h = 0; h < HOLES; h++) {
+      var th = document.createElement('th');
+      th.innerHTML = '<span class="hole-marker" data-hole="' + h + '">' + (h + 1) + '</span>';
+      headRow.insertBefore(th, headRow.lastElementChild);
 
-    (function (h) {
-      var hcpTd = document.createElement('td');
-      var hcpInput = document.createElement('input');
-      hcpInput.className = 'hcpindex';
-      hcpInput.type = 'text';
-      hcpInput.inputMode = 'numeric';
-      hcpInput.value = state.strokeIndex[h];
-      hcpInput.setAttribute('aria-label', 'Slagindex hål ' + (h + 1));
-      hcpInput.addEventListener('input', function (e) {
-        var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
-        state.strokeIndex[h] = v === '' ? '' : Number(v);
-        render();
-      });
-      hcpTd.appendChild(hcpInput);
-      hcpRow.insertBefore(hcpTd, hcpRow.lastElementChild);
-      hcpIndexInputs[h] = hcpInput;
-    })(h);
+      (function (h) {
+        var parTd = document.createElement('td');
+        var parInput = document.createElement('input');
+        parInput.className = 'parinput';
+        parInput.type = 'text';
+        parInput.inputMode = 'numeric';
+        parInput.value = parAt(h);
+        parInput.setAttribute('aria-label', t('par_row_label') + ' ' + t('hole_th') + ' ' + (h + 1));
+        parInput.addEventListener('input', function (e) {
+          var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 1);
+          parPerHole[h] = v === '' ? 3 : Number(v);
+          state.parPerHole = parPerHole;
+          persistRound();
+          render();
+        });
+        parTd.appendChild(parInput);
+        parRow.insertBefore(parTd, parRow.lastElementChild);
+        parIndexInputs[h] = parInput;
+      })(h);
+
+      (function (h) {
+        var hcpTd = document.createElement('td');
+        var hcpInput = document.createElement('input');
+        hcpInput.className = 'hcpindex';
+        hcpInput.type = 'text';
+        hcpInput.inputMode = 'numeric';
+        hcpInput.value = state.strokeIndex[h];
+        hcpInput.setAttribute('aria-label', 'Slagindex hål ' + (h + 1));
+        hcpInput.addEventListener('input', function (e) {
+          var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+          state.strokeIndex[h] = v === '' ? '' : Number(v);
+          render();
+        });
+        hcpTd.appendChild(hcpInput);
+        hcpRow.insertBefore(hcpTd, hcpRow.lastElementChild);
+        hcpIndexInputs[h] = hcpInput;
+      })(h);
+    }
+    document.getElementById('parTotalLabel').textContent = totalPar();
+    document.getElementById('parTotalCell').textContent = totalPar();
   }
+  rebuildHoleColumns();
 
   function buildOrder() {
     var order = [];
@@ -1343,6 +1465,10 @@
     document.querySelectorAll('.hole-marker').forEach(function (f) {
       f.classList.toggle('hole-marker-active', Number(f.getAttribute('data-hole')) === focusedHole);
     });
+    if (currentMapSlug && mapHoleSelect && mapHoleSelect.value != focusedHole + 1) {
+      mapHoleSelect.value = focusedHole + 1;
+      if (mapGuidePanel.open) loadMapImages();
+    }
   }
 
   // ---- rebuild player name fields (meta card) ----
@@ -1649,7 +1775,7 @@
         }
       }
       if (totalCell) {
-        var html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - played * PAR) + '</div>' : '');
+        var html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + '</div>' : '');
         if (extra > 0 && played > 0) {
           html += '<div class="relpar" style="color:#2f5233;">' + t('netto_label') + ' ' + diffLabel(sum - netParTotal) + '</div>';
         }
@@ -1700,7 +1826,7 @@
         }
         diff = sum - netParTotal;
       } else {
-        diff = sum - played * PAR;
+        diff = sum - sumParForPlayed(state.scores[p], parPerHole);
       }
       return { name: name || (playerLabel(p)), played: played, diff: diff };
     }).filter(Boolean);
@@ -1750,13 +1876,16 @@
   function collectPlayerTrendSeries() {
     var entries = []; // { date, savedAt, name, diff }
     roundHistory.forEach(function (r) {
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      var rTotalPar = rPar.reduce(function (a, v) { return a + v; }, 0);
       r.players.forEach(function (name, p) {
-        if (playedCount(r.scores[p]) === HOLES) {
+        if (playedCount(r.scores[p]) === rHoles) {
           entries.push({
             date: r.date,
             savedAt: r.savedAt || r.date,
             name: name || (playerLabel(p)),
-            diff: sumArr(r.scores[p]) - PAR * HOLES
+            diff: sumArr(r.scores[p]) - rTotalPar
           });
         }
       });
@@ -1783,9 +1912,12 @@
     var order = [];
     roundHistory.forEach(function (r) {
       var key = courseKey(r);
-      var completed = r.scores.filter(function (arr) { return playedCount(arr) === HOLES; });
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      var rTotalPar = rPar.reduce(function (a, v) { return a + v; }, 0);
+      var completed = r.scores.filter(function (arr) { return playedCount(arr) === rHoles; });
       if (completed.length === 0) return;
-      var best = Math.min.apply(null, completed.map(sumArr)) - PAR * HOLES;
+      var best = Math.min.apply(null, completed.map(sumArr)) - rTotalPar;
       if (!groups[key]) { groups[key] = []; order.push(key); }
       groups[key].push(best);
     });
@@ -1904,21 +2036,23 @@
     roundHistory.forEach(function (r) {
       var players = r.players || [];
       var scores = r.scores || [];
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
       players.forEach(function (name, p) {
         var arr = scores[p] || [];
         var played = arr.filter(function (v) { return v !== '' && v != null; }).length;
         if (played === 0) return;
         var sum = arr.reduce(function (a, v) { return a + (Number(v) || 0); }, 0);
-        arr.forEach(function (v) {
+        arr.forEach(function (v, h) {
           if (v === '' || v == null) return;
           holesPlayed++;
-          if (Number(v) <= PAR - 1) birdieOrBetter++;
+          if (Number(v) <= (rPar[h] || 3) - 1) birdieOrBetter++;
         });
-        var diff = sum - played * PAR;
+        var diff = sum - sumParForPlayed(arr, rPar);
         totalDiff += diff;
         diffCount++;
-        if (played === HOLES && (best === null || diff < best.diff)) {
-          best = { diff: diff, name: name || 'Spelare', date: r.date, club: courseLabel(r) };
+        if (played === rHoles && (best === null || diff < best.diff)) {
+          best = { diff: diff, name: name || playerLabel(p), date: r.date, club: courseLabel(r) };
         }
       });
     });
@@ -2024,17 +2158,20 @@
 
       // best total & average vs par across fully-played rounds for this course
       var completed = rounds.filter(function (r) {
-        return r.scores.every(function (arr) { return playedCount(arr) === HOLES; });
+        var rHoles = r.holesCount || 9;
+        return r.scores.every(function (arr) { return playedCount(arr) === rHoles; });
       });
-      var bestPerRound = completed.map(function (r) {
-        return Math.min.apply(null, r.scores.map(sumArr));
+      var bestDiffPerRound = completed.map(function (r) {
+        var rHoles = r.holesCount || 9;
+        var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+        return Math.min.apply(null, r.scores.map(function (arr) { return sumArr(arr) - sumParForPlayed(arr, rPar); }));
       });
       var statsHtml = '';
-      if (bestPerRound.length > 0) {
-        var best = Math.min.apply(null, bestPerRound);
-        var avg = bestPerRound.reduce(function (a, b) { return a + b; }, 0) / bestPerRound.length;
-        statsHtml = rounds.length + ' rundor · bästa <strong>' + diffLabel(best - PAR * HOLES) +
-          '</strong> · snitt ' + diffLabel(Math.round(avg - PAR * HOLES));
+      if (bestDiffPerRound.length > 0) {
+        var best = Math.min.apply(null, bestDiffPerRound);
+        var avg = bestDiffPerRound.reduce(function (a, b) { return a + b; }, 0) / bestDiffPerRound.length;
+        statsHtml = rounds.length + ' rundor · bästa <strong>' + diffLabel(best) +
+          '</strong> · snitt ' + diffLabel(Math.round(avg));
       } else {
         statsHtml = rounds.length + ' ' + (rounds.length === 1 ? 'runda' : 'rundor');
       }
@@ -2120,14 +2257,100 @@
     clubResultsSelect.style.display = 'none';
     persistRound();
   });
-  clubInput.addEventListener('blur', function (e) {
-    var known = lookupCourseStrokeIndex(e.target.value);
-    if (known) {
-      state.strokeIndex = known.strokeIndex.slice();
+  // ---- course guide images (overview + per-hole) ----
+  var mapGuidePanel = document.getElementById('mapGuidePanel');
+  var mapOverviewImg = document.getElementById('mapOverviewImg');
+  var mapHoleSelect = document.getElementById('mapHoleSelect');
+  var mapHoleImg = document.getElementById('mapHoleImg');
+  var currentMapSlug = null;
+
+  function updateMapGuide() {
+    var known = findKnownCourse(state.club);
+    var slug = known && known.mapSlug;
+    if (!slug) {
+      mapGuidePanel.style.display = 'none';
+      currentMapSlug = null;
+      return;
+    }
+    mapGuidePanel.style.display = '';
+    if (slug !== currentMapSlug) {
+      currentMapSlug = slug;
+      mapHoleSelect.innerHTML = '';
+      for (var h = 0; h < HOLES; h++) {
+        var opt = document.createElement('option');
+        opt.value = h + 1;
+        opt.textContent = t('map_hole_label') + ' ' + (h + 1);
+        mapHoleSelect.appendChild(opt);
+      }
+      mapHoleSelect.value = focusedHole + 1;
+      if (mapGuidePanel.open) loadMapImages();
+      else { mapOverviewImg.style.display = 'none'; mapHoleImg.style.display = 'none'; }
+    }
+  }
+  function loadMapImages() {
+    if (!currentMapSlug) return;
+    mapOverviewImg.src = 'images/' + currentMapSlug + '-banguide-oversikt.png';
+    mapOverviewImg.style.display = '';
+    mapOverviewImg.onerror = function () { mapOverviewImg.style.display = 'none'; };
+    var h = Number(mapHoleSelect.value) || 1;
+    mapHoleImg.src = 'images/' + currentMapSlug + '-banguide-hal-' + h + '.png';
+    mapHoleImg.style.display = '';
+    mapHoleImg.onerror = function () { mapHoleImg.style.display = 'none'; };
+  }
+  mapGuidePanel.addEventListener('toggle', function () {
+    if (mapGuidePanel.open) loadMapImages();
+  });
+  mapHoleSelect.addEventListener('change', function () {
+    if (mapGuidePanel.open) loadMapImages();
+  });
+
+  function applyKnownCourseData(known, showToastMsg) {
+    if (!known) { updateMapGuide(); return; }
+    var courseHoles = known.parPerHole ? known.parPerHole.length : (known.strokeIndex ? known.strokeIndex.length : null);
+    if (courseHoles && courseHoles !== HOLES) {
+      // only auto-switch the round length if nothing has been entered yet — never silently discard scores
+      if (!hasAnyScoreEntered()) {
+        HOLES = courseHoles;
+        state.holesCount = HOLES;
+        state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+        parPerHole = known.parPerHole ? known.parPerHole.slice() : defaultParPerHole(HOLES);
+        state.parPerHole = parPerHole;
+        state.strokeIndex = known.strokeIndex ? known.strokeIndex.slice() : defaultStrokeIndex(HOLES);
+        rebuildHoleColumns();
+        rebuildPlayerRows();
+        renderPlayerFields();
+        updateHolesToggleUI();
+        persistRound();
+        render();
+        updateMapGuide();
+        if (showToastMsg) showToast(t('toast_course_and_holes_filled', { course: known.name, holes: HOLES }));
+        return;
+      }
+      // hole counts differ but there's already data on the scorecard — only fill what still fits
+      if (known.strokeIndex && known.strokeIndex.length === HOLES) state.strokeIndex = known.strokeIndex.slice();
       persistRound();
       render();
-      showToast(t('toast_stroke_index_filled', { course: known.name }));
+      updateMapGuide();
+      if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
+      return;
     }
+    if (known.parPerHole && known.parPerHole.length === HOLES) {
+      parPerHole = known.parPerHole.slice();
+      state.parPerHole = parPerHole;
+      rebuildHoleColumns();
+    }
+    if (known.strokeIndex && known.strokeIndex.length === HOLES) {
+      state.strokeIndex = known.strokeIndex.slice();
+    }
+    persistRound();
+    render();
+    updateMapGuide();
+    if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
+  }
+
+  clubInput.addEventListener('blur', function (e) {
+    var known = lookupCourseStrokeIndex(e.target.value);
+    applyKnownCourseData(known, true);
   });
 
   function haversineKm(lat1, lon1, lat2, lon2) {
@@ -2291,10 +2514,14 @@
     if (!chosen) return;
     state.club = chosen.name;
     var known = lookupCourseStrokeIndex(chosen.name);
-    if (known) state.strokeIndex = known.strokeIndex.slice();
-    render();
     setCourseStatus(t('geo_selected_club', { club: chosen.name }), 'success');
-    showToast(known ? t('toast_club_and_index_filled', { club: chosen.name }) : t('toast_club_filled', { club: chosen.name }));
+    if (known) {
+      applyKnownCourseData(known, false);
+      showToast(t('toast_club_and_index_filled', { club: chosen.name }));
+    } else {
+      render();
+      showToast(t('toast_club_filled', { club: chosen.name }));
+    }
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
@@ -2363,6 +2590,8 @@
       handicaps: state.handicaps.slice(),
       extras: state.extras.slice(),
       genders: state.genders.slice(),
+      holesCount: HOLES,
+      parPerHole: parPerHole.slice(),
       strokeIndex: state.strokeIndex.slice(),
       scores: state.scores.map(function (arr) { return arr.slice(); }),
       savedAt: new Date().toISOString()
@@ -2384,7 +2613,7 @@
           netParTotal += netParForHole(state.strokeIndex, extra, h);
         }
       }
-      var grossDiff = played > 0 ? sum - played * PAR : null;
+      var grossDiff = played > 0 ? sum - sumParForPlayed(state.scores[p], parPerHole) : null;
       var netDiff = played > 0 ? sum - netParTotal : null;
       var rankMetric = played > 0 ? (extra > 0 ? netDiff : grossDiff) : null;
       return {
@@ -2443,7 +2672,7 @@
   function drawScorecardImage() {
     var canvas = document.createElement('canvas');
     var dpr = window.devicePixelRatio || 1;
-    var W = 640;
+    var W = HOLES > 9 ? 980 : 640;
     var rowH = 30;
     var players = state.players;
     var H = 150 + players.length * (rowH + 14) + 40;
@@ -2462,7 +2691,7 @@
     ctx.fillStyle = '#c9a227';
     ctx.font = '700 10px IBM Plex Mono, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('KLUBBRUNDA · 9 HÅL · PAR 3', 20, 24);
+    ctx.fillText('KLUBBRUNDA · ' + HOLES + ' HÅL · PAR ' + totalPar(), 20, 24);
     ctx.fillStyle = '#f7f4e9';
     ctx.font = '800 22px Bitter, serif';
     ctx.fillText(courseLabel(state) || 'Niohåls-scorekort', 20, 52);
@@ -2497,9 +2726,9 @@
     ctx.fillText('Par', 20, y);
     ctx.textAlign = 'center';
     for (var h2 = 0; h2 < HOLES; h2++) {
-      ctx.fillText(String(PAR), 20 + colLabelW + holeColW * h2 + holeColW / 2, y);
+      ctx.fillText(String(parAt(h2)), 20 + colLabelW + holeColW * h2 + holeColW / 2, y);
     }
-    ctx.fillText(String(PAR * HOLES), 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+    ctx.fillText(String(totalPar()), 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
 
     // player rows
     players.forEach(function (name, p) {
@@ -2520,7 +2749,7 @@
       var sum = sumArr(state.scores[p]);
       var played = playedCount(state.scores[p]);
       ctx.font = '700 11px IBM Plex Mono, monospace';
-      var totalText = played > 0 ? sum + ' (' + diffLabel(sum - played * PAR) + ')' : '–';
+      var totalText = played > 0 ? sum + ' (' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + ')' : '–';
       ctx.fillText(totalText, 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
     });
 
@@ -2581,6 +2810,54 @@
   document.getElementById('themeToggleBtn').addEventListener('click', function () {
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
   });
+
+  function updateHolesToggleUI() {
+    document.querySelectorAll('.holes-btn').forEach(function (btn) {
+      btn.classList.toggle('active', Number(btn.getAttribute('data-holes')) === HOLES);
+    });
+  }
+  function hasAnyScoreEntered() {
+    return state.scores.some(function (arr) { return arr.some(function (v) { return v !== '' && v != null; }); });
+  }
+  var pendingHoles = null;
+  function switchHoleCount(newHoles) {
+    HOLES = newHoles;
+    parPerHole = defaultParPerHole(newHoles);
+    state.holesCount = newHoles;
+    state.parPerHole = parPerHole;
+    state.strokeIndex = defaultStrokeIndex(newHoles);
+    state.scores = state.players.map(function () { return Array(newHoles).fill(''); });
+    roundCompletionCelebrated = false;
+    persistRound();
+    rebuildHoleColumns();
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    updateHolesToggleUI();
+    showToast(t(newHoles === 18 ? 'holes_18' : 'holes_9'));
+  }
+  document.querySelectorAll('.holes-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var newHoles = Number(btn.getAttribute('data-holes'));
+      if (newHoles === HOLES) return;
+      if (hasAnyScoreEntered()) {
+        pendingHoles = newHoles;
+        document.getElementById('confirmHoles').classList.add('show');
+      } else {
+        switchHoleCount(newHoles);
+      }
+    });
+  });
+  document.getElementById('cancelHolesBtn').addEventListener('click', function () {
+    pendingHoles = null;
+    document.getElementById('confirmHoles').classList.remove('show');
+  });
+  document.getElementById('confirmHolesBtn').addEventListener('click', function () {
+    if (pendingHoles != null) switchHoleCount(pendingHoles);
+    pendingHoles = null;
+    document.getElementById('confirmHoles').classList.remove('show');
+  });
+  updateHolesToggleUI();
 
   document.getElementById('langSelect').addEventListener('change', function (e) {
     setLanguage(e.target.value);
@@ -2686,15 +2963,12 @@
     showToast(t('toast_backup_restored'));
   });
 
-  document.getElementById('parTotalLabel').textContent = PAR * HOLES;
-  document.getElementById('parTotalCell').textContent = PAR * HOLES;
-
   rebuildPlayerRows();
   renderPlayerFields();
   renderKnownPlayersList();
   render();
   renderHistory();
-  loadCourseDatabase();
+  loadCourseDatabase().then(function () { updateMapGuide(); });
   renderLanguageOptions();
   loadTranslations();
 })();

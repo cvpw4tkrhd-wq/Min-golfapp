@@ -6,7 +6,9 @@
     {
       "match": "albatrossen",
       "name": "Albatross GK (Albatrossen, 18 hål)",
-      "verified": "Klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-07-11). Standardtee gul (herr) / röd (dam).",
+      "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-05) samt klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-07-11). Standardtee gul (herr) / röd (dam).",
+      "parPerHole": [4, 3, 4, 4, 3, 4, 5, 5, 4, 3, 4, 4, 4, 4, 4, 3, 5, 4],
+      "strokeIndex": [6, 16, 8, 4, 18, 10, 2, 12, 14, 13, 3, 11, 15, 9, 1, 17, 5, 7],
       "slope": {
         "men": { "cr": 70.8, "slope": 138, "par": 71 },
         "women": { "cr": 71.3, "slope": 133, "par": 71 }
@@ -19,7 +21,9 @@
     {
       "match": "birdie",
       "name": "Albatross GK (Birdiebanan, hål 19–27)",
-      "verified": "Klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-04-19). Par 74 avser 18 hål (9-hålsslingan spelad två varv). Standardtee gul (herr) / röd (dam).",
+      "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-05): 18-hålsvarvet är samma 9 fysiska hål spelade två gånger med olika index tilldelat andra varvet (kortets faktiska par-summa är 72). Slope-tabellens par 74 är en avsiktlig avvikelse — det är den siffra klubben själv värderat banan mot för Course Rating/Slope-formeln (2013-04-19) och används bara i handicap-uträkningen, inte i själva scorekortet. Standardtee gul (herr) / röd (dam).",
+      "parPerHole": [5, 3, 3, 3, 5, 4, 4, 5, 4, 5, 3, 3, 3, 5, 4, 4, 5, 4],
+      "strokeIndex": [5, 15, 7, 17, 1, 9, 13, 3, 11, 6, 16, 8, 18, 2, 10, 14, 4, 12],
       "slope": {
         "men": { "cr": 71.4, "slope": 132, "par": 74 },
         "women": { "cr": 72.8, "slope": 130, "par": 74 }
@@ -33,6 +37,7 @@
       "match": ["albatross", "eaglekorten"],
       "name": "Albatross GK (Eaglekorten)",
       "verified": "Kontrollräknat mot spelares eget scorekort 2026-07-01 (SHCP 39 herr / 45 dam vid HCP 54,0) samt klubbens officiella slope-PDF:er.",
+      "mapSlug": "albatross-golfklubb",
       "strokeIndex": [13, 11, 5, 1, 15, 9, 7, 17, 3],
       "slope": {
         "men": { "cr": 53.7, "slope": 83, "par": 54 },
@@ -45,6 +50,21 @@
       "verified": "Endast damer röd tee officiellt bekräftad (lerjedalen.se/spela/slope: CR 72.6 / Slope 122). Herrdata fanns bara hos tredjepart och har därför utelämnats i väntan på officiell källa.",
       "slope": {
         "women": { "cr": 72.6, "slope": 122, "par": 72 }
+      }
+    },
+    {
+      "match": ["kungälv", "kungalv", "kode"],
+      "name": "Kungälv-Kode GK (18 hål)",
+      "verified": "Officiellt scorekort (foto från kkgk.se, kontrollerat 2026-08-05). Ersätter tidigare aggregerade siffror som visade sig vara felaktiga (par var faktiskt 71, inte 72). Standardtee gul (herr) / röd (dam). Riktig bana med varierande par per hål (3/4/5/6).",
+      "parPerHole": [4, 5, 3, 6, 3, 5, 4, 3, 4, 3, 4, 3, 5, 3, 4, 4, 4, 4],
+      "strokeIndex": [3, 9, 13, 7, 15, 11, 1, 17, 5, 10, 16, 4, 2, 18, 8, 14, 12, 6],
+      "slope": {
+        "men": { "cr": 70.8, "slope": 135, "par": 71 },
+        "women": { "cr": 70.2, "slope": 131, "par": 71 }
+      },
+      "tees": {
+        "men": { "vit": { "cr": 72.4, "slope": 137, "par": 71 }, "gul": { "cr": 70.8, "slope": 135, "par": 71 }, "bla": { "cr": 68.9, "slope": 130, "par": 71 }, "rod": { "cr": 66.5, "slope": 125, "par": 71 } },
+        "women": { "gul": { "cr": 75.4, "slope": 142, "par": 71 }, "bla": { "cr": 73.1, "slope": 137, "par": 71 }, "rod": { "cr": 70.2, "slope": 131, "par": 71 }, "orange": { "cr": 66.7, "slope": 124, "par": 71 } }
       }
     }
   ]
