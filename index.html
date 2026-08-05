@@ -480,7 +480,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.40 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.41 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -1322,12 +1322,13 @@
     try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(roundHistory)); } catch (e) {}
   }
   function profileKey(name) { return (name || '').trim().toLowerCase(); }
-  function saveProfileForPlayer(name, handicap) {
+  function saveProfileForPlayer(name, handicap, gender) {
     var key = profileKey(name);
     if (!key) return;
     var existing = playerProfiles[key];
     var hcpToStore = handicap || (existing ? existing.handicap : '') || '';
-    playerProfiles[key] = { displayName: (name || '').trim(), handicap: hcpToStore, updatedAt: new Date().toISOString() };
+    var genderToStore = gender || (existing ? existing.gender : '') || '';
+    playerProfiles[key] = { displayName: (name || '').trim(), handicap: hcpToStore, gender: genderToStore, updatedAt: new Date().toISOString() };
     try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
   }
   function lookupProfile(name) {
@@ -1532,17 +1533,30 @@
       input.addEventListener('blur', function (e) {
         var typedName = e.target.value;
         var profile = lookupProfile(typedName);
-        if (profile && !state.handicaps[p]) {
-          state.handicaps[p] = profile.handicap;
-          var hcpEl = document.getElementById('hcp' + p);
-          if (hcpEl) hcpEl.value = profile.handicap;
-          persistRound();
-          render();
-          if (profile.handicap) showToast(t('toast_hcp_autofilled', { name: profile.displayName }));
+        if (profile) {
+          var filledSomething = false;
+          if (!state.handicaps[p] && profile.handicap) {
+            state.handicaps[p] = profile.handicap;
+            var hcpEl = document.getElementById('hcp' + p);
+            if (hcpEl) hcpEl.value = profile.handicap;
+            filledSomething = true;
+          }
+          if (!state.genders[p] && profile.gender) {
+            state.genders[p] = profile.gender;
+            var genderEl = document.getElementById('gender' + p);
+            if (genderEl) genderEl.value = profile.gender;
+            filledSomething = true;
+          }
+          if (filledSomething) {
+            persistRound();
+            render();
+            showToast(t('toast_hcp_autofilled', { name: profile.displayName }));
+            autoCalcExtraForPlayer(p, true);
+          }
         }
-        // remember the name itself even if no HCP was entered, so it shows up
+        // remember the name itself even if nothing else was entered, so it shows up
         // as an autocomplete suggestion and can be recognized next round
-        saveProfileForPlayer(typedName, state.handicaps[p]);
+        saveProfileForPlayer(typedName, state.handicaps[p], state.genders[p]);
         renderKnownPlayersList();
       });
       row.appendChild(input);
@@ -1588,7 +1602,7 @@
       hcpInput.addEventListener('input', function (e) {
         state.handicaps[p] = e.target.value.replace(/[^0-9.,]/g, '');
         persistRound();
-        saveProfileForPlayer(state.players[p], state.handicaps[p]);
+        saveProfileForPlayer(state.players[p], state.handicaps[p], state.genders[p]);
         renderKnownPlayersList();
       });
       hcpInput.addEventListener('blur', function () { autoCalcExtra(true); });
@@ -1613,6 +1627,8 @@
       genderSelect.addEventListener('change', function (e) {
         state.genders[p] = e.target.value;
         persistRound();
+        saveProfileForPlayer(state.players[p], state.handicaps[p], state.genders[p]);
+        renderKnownPlayersList();
         autoCalcExtra(true);
       });
       extraRow.appendChild(genderSelect);
