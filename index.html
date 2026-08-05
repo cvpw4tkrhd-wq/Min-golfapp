@@ -480,7 +480,7 @@
   ← Alla appar
 </a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.41 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.42 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -929,13 +929,22 @@
   function lookupSlopeTable(clubName) {
     var course = findKnownCourse(clubName);
     if (!course || !course.slope) return null;
-    return { name: course.name, men: course.slope.men, women: course.slope.women };
+    return { name: course.name, men: course.slope.men, women: course.slope.women, ratedHoles: course.slopeHolesRated || 18 };
   }
-  function computeCourseHandicap(hcp, table) {
+  function computeCourseHandicap(hcp, table, ratedHoles) {
     var n = Number(String(hcp).replace(',', '.'));
     if (!isFinite(n)) return null;
     var raw = n * (table.slope / 113) + (table.cr - table.par);
-    return Math.max(0, Math.round(raw));
+    var full = Math.max(0, Math.round(raw));
+    // WHS 9-hole procedure: take the fully-rated Course Handicap, then scale
+    // it to the number of holes actually being played and round again —
+    // e.g. a course rated as an 18-hole double-loop (like a 9-hole par-3
+    // course rated "played twice") needs its handicap halved for a single
+    // 9-hole round, otherwise every player gets roughly double their real strokes.
+    if (ratedHoles && ratedHoles !== HOLES) {
+      return Math.max(0, Math.round(full * HOLES / ratedHoles));
+    }
+    return full;
   }
   function autoCalcExtraForPlayer(p, silent) {
     var table = lookupSlopeTable(state.club);
@@ -945,7 +954,7 @@
     if (!state.handicaps[p]) { if (!silent) showToast(t('toast_fill_hcp')); return; }
     var courseData = g === 'M' ? table.men : table.women;
     if (!courseData) { if (!silent) showToast(t('toast_no_verified_data', { gender: g === 'M' ? t('gender_men_word') : t('gender_women_word') })); return; }
-    var result = computeCourseHandicap(state.handicaps[p], courseData);
+    var result = computeCourseHandicap(state.handicaps[p], courseData, table.ratedHoles);
     if (result == null) { if (!silent) showToast(t('toast_cant_parse_hcp')); return; }
     state.extras[p] = String(result);
     persistRound();
