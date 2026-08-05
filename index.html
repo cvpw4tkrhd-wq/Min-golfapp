@@ -347,6 +347,7 @@
   .panel-body { padding: 12px 16px 16px; }
   .map-img {
     width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5dfc8; margin-bottom: 10px; display: block;
+    touch-action: pan-y;
   }
   .map-hole-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .map-hole-row label {
@@ -354,9 +355,15 @@
     color: #6b6552; text-transform: uppercase;
   }
   #mapHoleSelect {
-    font-family: 'Inter', sans-serif; font-size: 14px; color: #2b2b2b;
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 14px; color: #2b2b2b;
     background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 6px 9px;
   }
+  .map-nav-btn {
+    width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 16px; font-weight: 700; color: #2f5233; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-nav-btn:active { background: #2f5233; color: #f7f4e9; }
   pre.log {
     font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.5; color: #2b2b2b;
     white-space: pre; overflow-x: auto; margin: 0 0 10px; background: #fffdf7;
@@ -471,16 +478,8 @@
 </style>
 </head>
 <body>
-<a href="https://cvpw4tkrhd-wq.github.io/Poangappar/"
-   style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 10px); left:10px; z-index:9999;
-          display:inline-flex; align-items:center; gap:6px;
-          background:rgba(0,0,0,0.35); color:#fff; text-decoration:none;
-          font-family:sans-serif; font-size:14px; padding:6px 12px;
-          border-radius:20px; backdrop-filter:blur(4px);">
-  ← Alla appar
-</a>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.42 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.43 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -546,7 +545,9 @@
       <img id="mapOverviewImg" class="map-img" alt="" loading="lazy" style="display:none;" />
       <div class="map-hole-row">
         <label for="mapHoleSelect" data-i18n="map_hole_label">Hål</label>
+        <button type="button" id="mapHolePrev" class="map-nav-btn" aria-label="Föregående hål">‹</button>
         <select id="mapHoleSelect"></select>
+        <button type="button" id="mapHoleNext" class="map-nav-btn" aria-label="Nästa hål">›</button>
       </div>
       <img id="mapHoleImg" class="map-img" alt="" loading="lazy" style="display:none;" />
     </div>
@@ -616,15 +617,7 @@
     <button class="btn-primary" id="saveHistoryBtn" type="button" data-i18n="save_history_btn">Spara runda i historik</button>
     <button class="btn-ghost" id="shareBtn" type="button" data-i18n="share_btn">Dela</button>
     <button class="btn-ghost" id="copyLogBtn" type="button" data-i18n="copy_log_btn">Kopiera logg</button>
-    <button class="btn-ghost" id="downloadLogBtn" type="button" data-i18n="download_log_btn">Ladda ner .txt</button>
   </div>
-
-  <details class="panel" id="logPanel">
-    <summary data-i18n="log_panel_title">Textlogg (förhandsvisning)</summary>
-    <div class="panel-body">
-      <pre class="log" id="logPreview"></pre>
-    </div>
-  </details>
 
   <details class="panel" id="statsPanel">
     <summary data-i18n="stats_panel_title">Statistik</summary>
@@ -1367,7 +1360,6 @@
   var parRow = document.getElementById('parRow');
   var hcpRow = document.getElementById('hcpRow');
   var playerRows = document.getElementById('playerRows');
-  var logPreview = document.getElementById('logPreview');
   var historyBody = document.getElementById('historyBody');
   var historyCount = document.getElementById('historyCount');
   var historyFilterRow = document.getElementById('historyFilterRow');
@@ -1838,7 +1830,6 @@
     });
 
     renderLeaderBanner();
-    logPreview.textContent = buildLog(state);
     updateFlag();
     persistRound();
   }
@@ -2297,7 +2288,15 @@
   var mapOverviewImg = document.getElementById('mapOverviewImg');
   var mapHoleSelect = document.getElementById('mapHoleSelect');
   var mapHoleImg = document.getElementById('mapHoleImg');
+  var mapHolePrev = document.getElementById('mapHolePrev');
+  var mapHoleNext = document.getElementById('mapHoleNext');
   var currentMapSlug = null;
+
+  function mapHoleLabel(n) {
+    var s = t('map_hole_label');
+    if (!s || s === 'map_hole_label') s = 'Hål';
+    return s + ' ' + n;
+  }
 
   function updateMapGuide() {
     var known = findKnownCourse(state.club);
@@ -2314,7 +2313,7 @@
       for (var h = 0; h < HOLES; h++) {
         var opt = document.createElement('option');
         opt.value = h + 1;
-        opt.textContent = t('map_hole_label') + ' ' + (h + 1);
+        opt.textContent = mapHoleLabel(h + 1);
         mapHoleSelect.appendChild(opt);
       }
       mapHoleSelect.value = focusedHole + 1;
@@ -2332,12 +2331,43 @@
     mapHoleImg.style.display = '';
     mapHoleImg.onerror = function () { mapHoleImg.style.display = 'none'; };
   }
+  function stepMapHole(delta) {
+    var current = Number(mapHoleSelect.value) || 1;
+    var next = current + delta;
+    if (next < 1) next = HOLES;
+    if (next > HOLES) next = 1;
+    mapHoleSelect.value = next;
+    if (mapGuidePanel.open) loadMapImages();
+  }
   mapGuidePanel.addEventListener('toggle', function () {
     if (mapGuidePanel.open) loadMapImages();
   });
   mapHoleSelect.addEventListener('change', function () {
     if (mapGuidePanel.open) loadMapImages();
   });
+  mapHolePrev.addEventListener('click', function () { stepMapHole(-1); });
+  mapHoleNext.addEventListener('click', function () { stepMapHole(1); });
+
+  // swipe left/right on the hole image to browse holes
+  (function () {
+    var startX = null, startY = null;
+    mapHoleImg.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    mapHoleImg.addEventListener('touchend', function (e) {
+      if (startX == null) return;
+      var endX = e.changedTouches[0].clientX;
+      var endY = e.changedTouches[0].clientY;
+      var dx = endX - startX;
+      var dy = endY - startY;
+      startX = null; startY = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        stepMapHole(dx < 0 ? 1 : -1);
+      }
+    }, { passive: true });
+  })();
 
   function applyKnownCourseData(known, showToastMsg) {
     if (!known) { updateMapGuide(); return; }
@@ -2704,9 +2734,6 @@
     document.getElementById('summaryModal').style.display = 'none';
   });
   document.getElementById('copyLogBtn').addEventListener('click', function () { copyText(buildLog(state)); });
-  document.getElementById('downloadLogBtn').addEventListener('click', function () {
-    downloadText(buildLog(state), 'golfrunda_' + state.date + '.txt');
-  });
 
   function drawScorecardImage() {
     var canvas = document.createElement('canvas');
