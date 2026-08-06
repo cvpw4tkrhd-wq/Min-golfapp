@@ -479,7 +479,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.44 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.45 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -1241,6 +1241,7 @@
     var handicaps = round.handicaps || [];
     var hasHcp = extras.some(function (e) { return Number(e) > 0; });
     var ranks = computeStrokeRanksFor(strokeIndex, roundHoles);
+    var roundStableford = round.scoringMode === 'stableford';
     var colWidth = 11;
     var lines = [];
     lines.push('GOLFRUNDA — ' + roundHoles + ' HÅL, PAR ' + roundTotalPar);
@@ -1281,6 +1282,25 @@
     });
     lines.push(totalRow);
     lines.push(relRow);
+    if (roundStableford) {
+      var pointsRow = pad(t('points_th').toUpperCase(), 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
+      players.forEach(function (name, p) {
+        var played = playedCount(scores[p]);
+        var pts = null;
+        if (played) {
+          pts = 0;
+          var extraP = Number(extras[p]) || 0;
+          for (var hp = 0; hp < roundHoles; hp++) {
+            var vp = scores[p][hp];
+            if (vp === '' || vp == null) continue;
+            var npp = roundPar[hp] + strokesOnHole(extraP, ranks[hp], roundHoles);
+            pts += stablefordPoints(vp, npp);
+          }
+        }
+        pointsRow += pad(pts == null ? '-' : pts, colWidth);
+      });
+      lines.push(pointsRow);
+    }
     if (hasHcp) {
       var nettoRow = pad(t('log_netto_label'), 8) + pad('', 6) + pad('', idxColWidth);
       players.forEach(function (name, p) {
@@ -1776,6 +1796,7 @@
       nettoTr.style.display = 'none';
       var nettoLabelTd = document.createElement('td');
       nettoLabelTd.className = 'rowlabel netto-label';
+      nettoLabelTd.id = 'nettoLabel' + p;
       nettoLabelTd.textContent = t('netto_label');
       nettoTr.appendChild(nettoLabelTd);
       for (var hn = 0; hn < HOLES; hn++) {
@@ -1847,18 +1868,31 @@
 
       var nettoRow = document.getElementById('nettoRow' + p);
       if (nettoRow) {
-        if (extra > 0) {
+        var showRow = extra > 0 || state.scoringMode === 'stableford';
+        if (showRow) {
           nettoRow.style.display = '';
+          var nettoLabelEl = document.getElementById('nettoLabel' + p);
+          if (nettoLabelEl) nettoLabelEl.textContent = state.scoringMode === 'stableford' ? t('points_th') : t('netto_label');
           for (var h4 = 0; h4 < HOLES; h4++) {
             var nc = document.getElementById('nettoCell' + p + '_' + h4);
             if (!nc) continue;
             var v4 = state.scores[p][h4];
             if (v4 === '' || v4 == null) { nc.textContent = ''; continue; }
             var np4 = netParForHole(state.strokeIndex, extra, h4);
-            nc.textContent = diffLabel(Number(v4) - np4);
+            if (state.scoringMode === 'stableford') {
+              nc.textContent = stablefordPoints(v4, np4);
+            } else {
+              nc.textContent = diffLabel(Number(v4) - np4);
+            }
           }
           var ntc = document.getElementById('nettoTotalCell' + p);
-          if (ntc) ntc.textContent = played > 0 ? diffLabel(sum - netParTotal) : '';
+          if (ntc) {
+            if (state.scoringMode === 'stableford') {
+              ntc.textContent = played > 0 ? sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole) : '';
+            } else {
+              ntc.textContent = played > 0 ? diffLabel(sum - netParTotal) : '';
+            }
+          }
         } else {
           nettoRow.style.display = 'none';
         }
