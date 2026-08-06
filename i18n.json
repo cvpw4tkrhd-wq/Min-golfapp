@@ -539,6 +539,30 @@
       "sv": "Hål", "no": "Hull", "da": "Hul", "fi": "Väylä", "is": "Hola",
       "en": "Hole", "es": "Hoyo", "fr": "Trou", "it": "Buca", "de": "Loch"
     },
+    "scoring_mode_label": {
+      "sv": "Spelform", "no": "Spilleform", "da": "Spilleform", "fi": "Pelimuoto", "is": "Leikform",
+      "en": "Scoring", "es": "Modalidad", "fr": "Formule de jeu", "it": "Formula di gioco", "de": "Spielform"
+    },
+    "scoring_stroke": {
+      "sv": "Slagspel", "no": "Slagspill", "da": "Slagspil", "fi": "Lyöntipeli", "is": "Höggleikur",
+      "en": "Stroke play", "es": "Juego por golpes", "fr": "Stroke play", "it": "Stroke play", "de": "Zählspiel"
+    },
+    "scoring_stableford": {
+      "sv": "Poängbogey", "no": "Poengbogey", "da": "Pointbogey", "fi": "Pistebogey", "is": "Stigaskor",
+      "en": "Stableford", "es": "Stableford", "fr": "Stableford", "it": "Stableford", "de": "Stableford"
+    },
+    "points_suffix": {
+      "sv": "poäng", "no": "poeng", "da": "point", "fi": "pistettä", "is": "stig",
+      "en": "points", "es": "puntos", "fr": "points", "it": "punti", "de": "Punkte"
+    },
+    "points_short": {
+      "sv": "p", "no": "p", "da": "p", "fi": "p", "is": "s",
+      "en": "pts", "es": "pts", "fr": "pts", "it": "pt", "de": "Pkt"
+    },
+    "points_th": {
+      "sv": "Poäng", "no": "Poeng", "da": "Point", "fi": "Pisteet", "is": "Stig",
+      "en": "Points", "es": "Puntos", "fr": "Points", "it": "Punti", "de": "Punkte"
+    },
     "player_n": {
       "sv": "Spelare {n}", "no": "Spiller {n}", "da": "Spiller {n}", "fi": "Pelaaja {n}", "is": "Leikmaður {n}",
       "en": "Player {n}", "es": "Jugador {n}", "fr": "Joueur {n}", "it": "Giocatore {n}", "de": "Spieler {n}"

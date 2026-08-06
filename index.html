@@ -479,7 +479,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.43 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.44 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -508,6 +508,16 @@
         <div class="holes-toggle" id="holesToggle">
           <button type="button" class="holes-btn" data-holes="9" data-i18n="holes_9">9 hål</button>
           <button type="button" class="holes-btn" data-holes="18" data-i18n="holes_18">18 hål</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field holes-toggle-field">
+      <div class="holes-toggle-row">
+        <label data-i18n="scoring_mode_label">Spelform</label>
+        <div class="holes-toggle" id="scoringModeToggle">
+          <button type="button" class="holes-btn" data-mode="stroke" data-i18n="scoring_stroke">Slagspel</button>
+          <button type="button" class="holes-btn" data-mode="stableford" data-i18n="scoring_stableford">Poängbogey</button>
         </div>
       </div>
     </div>
@@ -561,7 +571,7 @@
         <tr id="headRow">
           <th class="rowlabel" data-i18n="hole_th">Hål</th>
           <!-- hole headers injected -->
-          <th data-i18n="total_th">Totalt</th>
+          <th id="totalColHeader" data-i18n="total_th">Totalt</th>
         </tr>
       </thead>
       <tbody>
@@ -771,6 +781,22 @@
     var total = 0;
     for (var h = 0; h < scoresArr.length; h++) {
       if (scoresArr[h] !== '' && scoresArr[h] != null) total += (parArr && parArr[h] != null) ? parArr[h] : 3;
+    }
+    return total;
+  }
+  // Stableford: 2 points for net par, 1 per stroke better/worse (min 0).
+  function stablefordPoints(score, netPar) {
+    if (score === '' || score == null) return null;
+    return Math.max(0, (netPar - Number(score)) + 2);
+  }
+  function sumStablefordForPlayer(scoresArr, strokeIndexArr, extra, parArr) {
+    var total = 0;
+    var ranks = computeStrokeRanks(strokeIndexArr);
+    for (var h = 0; h < scoresArr.length; h++) {
+      var v = scoresArr[h];
+      if (v === '' || v == null) continue;
+      var np = (parArr && parArr[h] != null ? parArr[h] : parAt(h)) + strokesOnHole(extra, ranks[h]);
+      total += stablefordPoints(v, np);
     }
     return total;
   }
@@ -1192,6 +1218,7 @@
       holesCount: holesCount,
       parPerHole: parPerHole.slice(),
       strokeIndex: defaultStrokeIndex(),
+      scoringMode: 'stroke',
       date: todayISO(),
       startTime: nowHM(),
       scores: [Array(HOLES).fill(''), Array(HOLES).fill('')]
@@ -1304,6 +1331,7 @@
       state.extras = (r.extras && r.extras.length === state.players.length) ? r.extras : state.players.map(function () { return ''; });
       state.genders = (r.genders && r.genders.length === state.players.length) ? r.genders : state.players.map(function () { return ''; });
       state.strokeIndex = (r.strokeIndex && r.strokeIndex.length === HOLES) ? r.strokeIndex : defaultStrokeIndex();
+      state.scoringMode = (r.scoringMode === 'stableford') ? 'stableford' : 'stroke';
     }
   } catch (e) {}
   roundCompletionCelebrated = isRoundComplete();
@@ -1767,6 +1795,8 @@
     dateInput.value = state.date;
     timeInput.value = state.startTime;
     if (document.activeElement !== clubInput) clubInput.value = state.club || '';
+    var totalHeader = document.getElementById('totalColHeader');
+    if (totalHeader) totalHeader.textContent = state.scoringMode === 'stableford' ? t('points_th') : t('total_th');
 
     for (var hi = 0; hi < HOLES; hi++) {
       if (hcpIndexInputs[hi] && document.activeElement !== hcpIndexInputs[hi]) {
@@ -1802,9 +1832,15 @@
         }
       }
       if (totalCell) {
-        var html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + '</div>' : '');
-        if (extra > 0 && played > 0) {
-          html += '<div class="relpar" style="color:#2f5233;">' + t('netto_label') + ' ' + diffLabel(sum - netParTotal) + '</div>';
+        var html;
+        if (state.scoringMode === 'stableford') {
+          var points = sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole);
+          html = (played > 0 ? points : '–') + (played > 0 ? '<div class="relpar">' + sum + ' ' + t('summary_strokes_suffix') + '</div>' : '');
+        } else {
+          html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + '</div>' : '');
+          if (extra > 0 && played > 0) {
+            html += '<div class="relpar" style="color:#2f5233;">' + t('netto_label') + ' ' + diffLabel(sum - netParTotal) + '</div>';
+          }
         }
         totalCell.innerHTML = html;
       }
@@ -1837,11 +1873,16 @@
   function renderLeaderBanner() {
     var banner = document.getElementById('leaderBanner');
     if (!banner) return;
+    var stableford = state.scoringMode === 'stableford';
     var contenders = state.players.map(function (name, p) {
       var extra = Number(state.extras[p]) || 0;
       var played = playedCount(state.scores[p]);
       if (played === 0) return null;
       var sum = sumArr(state.scores[p]);
+      if (stableford) {
+        var points = sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole);
+        return { name: name || (playerLabel(p)), played: played, metric: points };
+      }
       var diff;
       if (extra > 0) {
         var netParTotal = 0;
@@ -1854,24 +1895,27 @@
       } else {
         diff = sum - sumParForPlayed(state.scores[p], parPerHole);
       }
-      return { name: name || (playerLabel(p)), played: played, diff: diff };
+      return { name: name || (playerLabel(p)), played: played, metric: diff };
     }).filter(Boolean);
 
     if (contenders.length === 0) {
       banner.style.display = 'none';
       return;
     }
-    var minDiff = Math.min.apply(null, contenders.map(function (c) { return c.diff; }));
-    var leaders = contenders.filter(function (c) { return c.diff === minDiff; });
+    var bestMetric = stableford
+      ? Math.max.apply(null, contenders.map(function (c) { return c.metric; }))
+      : Math.min.apply(null, contenders.map(function (c) { return c.metric; }));
+    var leaders = contenders.filter(function (c) { return c.metric === bestMetric; });
     var maxPlayed = Math.max.apply(null, contenders.map(function (c) { return c.played; }));
+    var metricLabel = stableford ? (bestMetric + ' ' + t('points_short')) : diffLabel(bestMetric);
 
     banner.style.display = 'flex';
     if (leaders.length === contenders.length && contenders.length > 1) {
-      banner.innerHTML = '<span class="leader-icon">⛳</span> ' + t('leader_even', { diff: diffLabel(minDiff), holes: maxPlayed });
+      banner.innerHTML = '<span class="leader-icon">⛳</span> ' + t('leader_even', { diff: metricLabel, holes: maxPlayed });
     } else if (leaders.length > 1) {
-      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_shared', { names: leaders.map(function (l) { return l.name; }).join(' & '), diff: diffLabel(minDiff) });
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_shared', { names: leaders.map(function (l) { return l.name; }).join(' & '), diff: metricLabel });
     } else {
-      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_single', { name: leaders[0].name, diff: diffLabel(minDiff), holes: leaders[0].played });
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_single', { name: leaders[0].name, diff: metricLabel, holes: leaders[0].played });
     }
   }
 
@@ -2661,6 +2705,7 @@
       genders: state.genders.slice(),
       holesCount: HOLES,
       parPerHole: parPerHole.slice(),
+      scoringMode: state.scoringMode || 'stroke',
       strokeIndex: state.strokeIndex.slice(),
       scores: state.scores.map(function (arr) { return arr.slice(); }),
       savedAt: new Date().toISOString()
@@ -2672,6 +2717,7 @@
   }
 
   function computeStandings() {
+    var stableford = state.scoringMode === 'stableford';
     return state.players.map(function (name, p) {
       var extra = Number(state.extras[p]) || 0;
       var played = playedCount(state.scores[p]);
@@ -2684,20 +2730,22 @@
       }
       var grossDiff = played > 0 ? sum - sumParForPlayed(state.scores[p], parPerHole) : null;
       var netDiff = played > 0 ? sum - netParTotal : null;
-      var rankMetric = played > 0 ? (extra > 0 ? netDiff : grossDiff) : null;
+      var points = played > 0 ? sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole) : null;
+      var rankMetric = played > 0 ? (stableford ? points : (extra > 0 ? netDiff : grossDiff)) : null;
       return {
-        name: name || (playerLabel(p)), played: played, sum: sum,
+        name: name || (playerLabel(p)), played: played, sum: sum, points: points,
         grossDiff: grossDiff, netDiff: netDiff, hasExtra: extra > 0, rankMetric: rankMetric
       };
     }).sort(function (a, b) {
       if (a.rankMetric == null && b.rankMetric == null) return 0;
       if (a.rankMetric == null) return 1;
       if (b.rankMetric == null) return -1;
-      return a.rankMetric - b.rankMetric;
+      return stableford ? (b.rankMetric - a.rankMetric) : (a.rankMetric - b.rankMetric);
     });
   }
 
   function openSummaryModal() {
+    var stableford = state.scoringMode === 'stableford';
     var standings = computeStandings();
     var body = document.getElementById('summaryBody');
     body.innerHTML = '';
@@ -2713,9 +2761,14 @@
       var row = document.createElement('div');
       row.className = 'summary-row' + (isWinner ? ' summary-winner' : '');
       var place = s.played > 0 ? (i + 1) + '.' : '—';
-      var scoreText = s.played > 0
-        ? s.sum + ' ' + t('summary_strokes_suffix') + ' (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  ' + t('netto_label') + ' ' + diffLabel(s.netDiff) : '')
-        : t('summary_no_result');
+      var scoreText;
+      if (!s.played) {
+        scoreText = t('summary_no_result');
+      } else if (stableford) {
+        scoreText = s.points + ' ' + t('points_suffix') + '  ·  ' + s.sum + ' ' + t('summary_strokes_suffix');
+      } else {
+        scoreText = s.sum + ' ' + t('summary_strokes_suffix') + ' (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  ' + t('netto_label') + ' ' + diffLabel(s.netDiff) : '');
+      }
       row.innerHTML =
         '<span class="summary-place">' + place + '</span>' +
         '<span class="summary-name">' + (isWinner ? '🏆 ' : '') + s.name + '</span>' +
@@ -2878,7 +2931,7 @@
   });
 
   function updateHolesToggleUI() {
-    document.querySelectorAll('.holes-btn').forEach(function (btn) {
+    document.querySelectorAll('#holesToggle .holes-btn').forEach(function (btn) {
       btn.classList.toggle('active', Number(btn.getAttribute('data-holes')) === HOLES);
     });
   }
@@ -2902,7 +2955,7 @@
     updateHolesToggleUI();
     showToast(t(newHoles === 18 ? 'holes_18' : 'holes_9'));
   }
-  document.querySelectorAll('.holes-btn').forEach(function (btn) {
+  document.querySelectorAll('#holesToggle .holes-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var newHoles = Number(btn.getAttribute('data-holes'));
       if (newHoles === HOLES) return;
@@ -2924,6 +2977,24 @@
     document.getElementById('confirmHoles').classList.remove('show');
   });
   updateHolesToggleUI();
+
+  function updateScoringModeUI() {
+    document.querySelectorAll('#scoringModeToggle .holes-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === (state.scoringMode || 'stroke'));
+    });
+  }
+  document.querySelectorAll('#scoringModeToggle .holes-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-mode');
+      if (mode === state.scoringMode) return;
+      state.scoringMode = mode;
+      persistRound();
+      updateScoringModeUI();
+      render();
+      showToast(t(mode === 'stableford' ? 'scoring_stableford' : 'scoring_stroke'));
+    });
+  });
+  updateScoringModeUI();
 
   document.getElementById('langSelect').addEventListener('change', function (e) {
     setLanguage(e.target.value);
