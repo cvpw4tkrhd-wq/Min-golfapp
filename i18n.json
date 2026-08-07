@@ -215,6 +215,29 @@
       "fi": "Keskitulos seuraa kohden", "is": "Meðalárangur eftir klúbbi", "en": "Average score per club",
       "es": "Resultado medio por club", "fr": "Score moyen par club", "it": "Punteggio medio per circolo", "de": "Durchschnittsergebnis pro Club"
     },
+    "player_progress_title": {
+      "sv": "Utveckling per spelare och bana", "no": "Utvikling per spiller og bane", "da": "Udvikling pr. spiller og bane",
+      "fi": "Kehitys pelaajan ja radan mukaan", "is": "Framvinda eftir leikmanni og velli", "en": "Progress per player and course",
+      "es": "Progreso por jugador y campo", "fr": "Progression par joueur et parcours", "it": "Progressi per giocatore e percorso", "de": "Fortschritt pro Spieler und Platz"
+    },
+    "player_progress_select_label": {
+      "sv": "Spelare", "no": "Spiller", "da": "Spiller", "fi": "Pelaaja", "is": "Leikmaður",
+      "en": "Player", "es": "Jugador", "fr": "Joueur", "it": "Giocatore", "de": "Spieler"
+    },
+    "player_progress_empty": {
+      "sv": "Ingen spelare hittad i historiken än.", "no": "Ingen spiller funnet i historikken ennå.", "da": "Ingen spiller fundet i historikken endnu.",
+      "fi": "Historiassa ei vielä löydy pelaajaa.", "is": "Enginn leikmaður fannst í sögunni enn.", "en": "No player found in the history yet.",
+      "es": "Aún no se ha encontrado ningún jugador en el historial.", "fr": "Aucun joueur trouvé dans l'historique pour le moment.",
+      "it": "Nessun giocatore trovato ancora nella cronologia.", "de": "Noch kein Spieler im Verlauf gefunden."
+    },
+    "player_progress_rounds_suffix": {
+      "sv": "rundor", "no": "runder", "da": "runder", "fi": "kierrosta", "is": "hringir",
+      "en": "rounds", "es": "rondas", "fr": "parties", "it": "giri", "de": "Runden"
+    },
+    "player_progress_best": {
+      "sv": "Bästa", "no": "Beste", "da": "Bedste", "fi": "Paras", "is": "Best",
+      "en": "Best", "es": "Mejor", "fr": "Meilleur", "it": "Migliore", "de": "Beste"
+    },
     "history_panel_title": {
       "sv": "Sparade rundor", "no": "Lagrede runder", "da": "Gemte runder", "fi": "Tallennetut kierrokset", "is": "Vistaðir hringir",
       "en": "Saved rounds", "es": "Rondas guardadas", "fr": "Parties enregistrées", "it": "Giri salvati", "de": "Gespeicherte Runden"

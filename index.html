@@ -453,6 +453,27 @@
   .stats-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .stats-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
+  .progress-select-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .progress-select-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase; flex-shrink: 0;
+  }
+  #progressPlayerSelect {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 14px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 6px 9px;
+  }
+  .progress-course-block { margin-bottom: 16px; }
+  .progress-course-block:last-child { margin-bottom: 0; }
+  .progress-course-name {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 13px; color: #2b2b2b; margin-bottom: 6px;
+  }
+  .progress-table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
+  .progress-table td { padding: 4px 6px; border-bottom: 1px solid #e5dfc8; }
+  .progress-table td:first-child { color: #6b6552; white-space: nowrap; }
+  .progress-table td:last-child { text-align: right; font-weight: 600; }
+  .progress-table tr:last-child td { border-bottom: none; }
+  .progress-best-row td { color: #2f5233; }
+
   .history-item { border-top: 1px solid #d8d0b8; padding-top: 10px; margin-top: 10px; }
 
   .history-item:first-child { border-top: none; margin-top: 0; padding-top: 0; }
@@ -493,7 +514,7 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.47 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.48 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -661,6 +682,14 @@
         <div class="stats-block">
           <div class="stats-title" data-i18n="course_chart_title">Snittresultat per klubb</div>
           <canvas id="courseChart" width="600" height="220"></canvas>
+        </div>
+        <div class="stats-block">
+          <div class="stats-title" data-i18n="player_progress_title">Utveckling per spelare och bana</div>
+          <div class="progress-select-row">
+            <label for="progressPlayerSelect" data-i18n="player_progress_select_label">Spelare</label>
+            <select id="progressPlayerSelect"></select>
+          </div>
+          <div id="progressContent"></div>
         </div>
       </div>
     </div>
@@ -2287,6 +2316,9 @@
     });
 
     drawCourseChart(courseChart, courseData);
+
+    renderPlayerProgressOptions();
+    renderPlayerProgress();
   }
 
   function renderHistory() {
@@ -2787,6 +2819,134 @@
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
+
+  function collectHistoryPlayerNames() {
+    var seenKeys = {};
+    var names = [];
+    roundHistory.forEach(function (r) {
+      (r.players || []).forEach(function (name) {
+        var trimmed = (name || '').trim();
+        if (!trimmed) return;
+        var key = trimmed.toLowerCase();
+        if (!seenKeys[key]) { seenKeys[key] = true; names.push(trimmed); }
+      });
+    });
+    names.sort(function (a, b) { return a.localeCompare(b, 'sv'); });
+    return names;
+  }
+
+  function renderPlayerProgressOptions() {
+    var sel = document.getElementById('progressPlayerSelect');
+    if (!sel) return;
+    var names = collectHistoryPlayerNames();
+    var prevValue = sel.value;
+    sel.innerHTML = '';
+    if (names.length === 0) {
+      var opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = t('player_progress_empty');
+      sel.appendChild(opt);
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    names.forEach(function (name) {
+      var o = document.createElement('option');
+      o.value = name;
+      o.textContent = name;
+      sel.appendChild(o);
+    });
+    sel.value = names.indexOf(prevValue) !== -1 ? prevValue : names[0];
+  }
+
+  function renderPlayerProgress() {
+    var sel = document.getElementById('progressPlayerSelect');
+    var container = document.getElementById('progressContent');
+    if (!sel || !container) return;
+    var playerName = sel.value;
+    container.innerHTML = '';
+    if (!playerName) return;
+    var key = playerName.trim().toLowerCase();
+
+    // group this player's rounds by course, each round tagged with its date
+    var byCourse = {}; // courseLabel -> [{date, savedAt, sum, played, diff, points, stableford}]
+    var courseOrder = [];
+    roundHistory.forEach(function (r) {
+      var idx = (r.players || []).findIndex(function (n) { return (n || '').trim().toLowerCase() === key; });
+      if (idx === -1) return;
+      var arr = (r.scores && r.scores[idx]) || [];
+      var played = arr.filter(function (v) { return v !== '' && v != null; }).length;
+      if (played === 0) return;
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      var sum = sumArr(arr);
+      var diff = sum - sumParForPlayed(arr, rPar);
+      var stableford = r.scoringMode === 'stableford';
+      var points = null;
+      if (stableford) {
+        var extra = Number((r.extras && r.extras[idx]) || 0) || 0;
+        var strokeIndex = (r.strokeIndex && r.strokeIndex.length === rHoles) ? r.strokeIndex : defaultStrokeIndexFor(rHoles);
+        var ranks = computeStrokeRanksFor(strokeIndex, rHoles);
+        points = 0;
+        for (var hp = 0; hp < rHoles; hp++) {
+          var vp = arr[hp];
+          if (vp === '' || vp == null) continue;
+          var npp = rPar[hp] + strokesOnHole(extra, ranks[hp], rHoles);
+          points += stablefordPoints(vp, npp);
+        }
+      }
+      var label = courseLabel(r) || t('unknown_club');
+      if (!byCourse[label]) { byCourse[label] = []; courseOrder.push(label); }
+      byCourse[label].push({ date: r.date, savedAt: r.savedAt || r.date, played: played === rHoles, sum: sum, diff: diff, points: points, stableford: stableford });
+    });
+
+    if (courseOrder.length === 0) {
+      var emptyDiv = document.createElement('div');
+      emptyDiv.className = 'empty-history';
+      emptyDiv.textContent = t('player_progress_empty');
+      container.appendChild(emptyDiv);
+      return;
+    }
+
+    courseOrder.forEach(function (label) {
+      var rounds = byCourse[label].slice().sort(function (a, b) { return (a.savedAt < b.savedAt) ? -1 : 1; });
+      var block = document.createElement('div');
+      block.className = 'progress-course-block';
+
+      var title = document.createElement('div');
+      title.className = 'progress-course-name';
+      title.textContent = label + ' (' + rounds.length + ' ' + t('player_progress_rounds_suffix') + ')';
+      block.appendChild(title);
+
+      var bestIdx = 0;
+      var bestVal = null;
+      rounds.forEach(function (r, i) {
+        var v = r.stableford ? r.points : r.diff;
+        var better = r.stableford ? (bestVal === null || v > bestVal) : (bestVal === null || v < bestVal);
+        if (better) { bestVal = v; bestIdx = i; }
+      });
+
+      var table = document.createElement('table');
+      table.className = 'progress-table';
+      rounds.forEach(function (r, i) {
+        var tr = document.createElement('tr');
+        if (i === bestIdx && rounds.length > 1) tr.className = 'progress-best-row';
+        var tdDate = document.createElement('td');
+        tdDate.textContent = r.date + (r.played ? '' : ' *');
+        var tdResult = document.createElement('td');
+        tdResult.textContent = r.stableford
+          ? (r.points + ' ' + t('points_short'))
+          : (r.sum + ' (' + diffLabel(r.diff) + ')');
+        tr.appendChild(tdDate);
+        tr.appendChild(tdResult);
+        table.appendChild(tr);
+      });
+      block.appendChild(table);
+      container.appendChild(block);
+    });
+  }
+
+  document.getElementById('progressPlayerSelect').addEventListener('change', renderPlayerProgress);
 
   document.getElementById('statsPanel').addEventListener('toggle', function (e) {
     if (e.target.open) renderStats();
