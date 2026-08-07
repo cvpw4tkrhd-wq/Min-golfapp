@@ -278,8 +278,24 @@
       "en": "Save & close", "es": "Guardar y cerrar", "fr": "Enregistrer et fermer", "it": "Salva e chiudi", "de": "Speichern & schließen"
     },
     "theme_toggle_title": {
-      "sv": "Mörkt/ljust tema", "no": "Mørkt/lyst tema", "da": "Mørkt/lyst tema", "fi": "Tumma/vaalea teema", "is": "Dökkt/ljóst þema",
-      "en": "Dark/light theme", "es": "Tema oscuro/claro", "fr": "Thème sombre/clair", "it": "Tema scuro/chiaro", "de": "Dunkles/helles Thema"
+      "sv": "Byt färgtema (4 st)", "no": "Bytt fargetema (4 stk)", "da": "Skift farvetema (4 stk)", "fi": "Vaihda väriteemaa (4 kpl)", "is": "Skipta um litaþema (4 stk)",
+      "en": "Switch color theme (4 available)", "es": "Cambiar tema de color (4 disponibles)", "fr": "Changer de thème de couleur (4 disponibles)", "it": "Cambia tema colore (4 disponibili)", "de": "Farbthema wechseln (4 verfügbar)"
+    },
+    "theme_name_dark": {
+      "sv": "Fairway (mörk)", "no": "Fairway (mørk)", "da": "Fairway (mørk)", "fi": "Fairway (tumma)", "is": "Fairway (dökkt)",
+      "en": "Fairway (dark)", "es": "Fairway (oscuro)", "fr": "Fairway (sombre)", "it": "Fairway (scuro)", "de": "Fairway (dunkel)"
+    },
+    "theme_name_light": {
+      "sv": "Ljus", "no": "Lys", "da": "Lys", "fi": "Vaalea", "is": "Ljóst",
+      "en": "Light", "es": "Claro", "fr": "Clair", "it": "Chiaro", "de": "Hell"
+    },
+    "theme_name_midnight": {
+      "sv": "Midnatt", "no": "Midnatt", "da": "Midnat", "fi": "Keskiyö", "is": "Miðnætti",
+      "en": "Midnight", "es": "Medianoche", "fr": "Minuit", "it": "Mezzanotte", "de": "Mitternacht"
+    },
+    "theme_name_sand": {
+      "sv": "Bunker", "no": "Bunker", "da": "Bunker", "fi": "Bunkkeri", "is": "Glompa",
+      "en": "Bunker", "es": "Búnker", "fr": "Bunker", "it": "Bunker", "de": "Bunker"
     },
     "sound_toggle_title": {
       "sv": "Ljud vid birdie/bogey av/på", "no": "Lyd ved birdie/bogey av/på", "da": "Lyd ved birdie/bogey til/fra",
@@ -562,6 +578,14 @@
     "points_th": {
       "sv": "Poäng", "no": "Poeng", "da": "Point", "fi": "Pisteet", "is": "Stig",
       "en": "Points", "es": "Puntos", "fr": "Points", "it": "Punti", "de": "Punkte"
+    },
+    "course_picker_placeholder": {
+      "sv": "Välj bana …", "no": "Velg bane …", "da": "Vælg bane …", "fi": "Valitse rata …", "is": "Veldu völl …",
+      "en": "Choose course …", "es": "Elige campo…", "fr": "Choisissez un parcours…", "it": "Scegli percorso…", "de": "Platz wählen …"
+    },
+    "toast_course_selected": {
+      "sv": "Bana vald: {course}", "no": "Bane valgt: {course}", "da": "Bane valgt: {course}", "fi": "Rata valittu: {course}", "is": "Völlur valinn: {course}",
+      "en": "Course selected: {course}", "es": "Campo seleccionado: {course}", "fr": "Parcours sélectionné : {course}", "it": "Percorso selezionato: {course}", "de": "Platz ausgewählt: {course}"
     },
     "player_n": {
       "sv": "Spelare {n}", "no": "Spiller {n}", "da": "Spiller {n}", "fi": "Pelaaja {n}", "is": "Leikmaður {n}",

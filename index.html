@@ -43,6 +43,20 @@
     --header-title: #1c3e2d;
     --header-subtitle: #4d6b53;
   }
+  body.theme-midnight {
+    --bg-stripe-a: #16213e;
+    --bg-stripe-b: #131c34;
+    --body-text: #e8ecf5;
+    --header-title: #f0f4ff;
+    --header-subtitle: #8ea3c9;
+  }
+  body.theme-sand {
+    --bg-stripe-a: #8a6a4a;
+    --bg-stripe-b: #7d5f42;
+    --body-text: #fbf3e6;
+    --header-title: #fff8ec;
+    --header-subtitle: #e3c9a3;
+  }
   body {
     min-height: 100vh;
     background:
@@ -170,6 +184,7 @@
     width: 100%; margin-top: 8px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
     background: #fffdf7; border: 1px solid #c9a227; border-radius: 6px; padding: 8px 9px;
   }
+  .course-picker { border-color: #2f5233; font-weight: 600; }
   .player-row-field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .player-row-field .swatch-dot {
     width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
@@ -473,13 +488,12 @@
 
   @media (max-width: 420px) {
     .title { font-size: 22px; }
-    .meta-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.45 · 2026-07-27</div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.47 · 2026-07-27</div>
 
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
@@ -490,7 +504,7 @@
   </style>
 
   <div class="header">
-    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" data-i18n-title="theme_toggle_title" title="Mörkt/ljust tema">🌙</button>
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" data-i18n-title="theme_toggle_title" title="Byt färgtema (4 st)">🌙</button>
     <button type="button" class="sound-toggle-btn" id="soundToggleBtn" data-i18n-title="sound_toggle_title" title="Ljud vid birdie/bogey av/på">🔊</button>
     <div class="eyebrow" data-i18n="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
     <h1 class="title" data-i18n="app_title">Niohåls-scorekort</h1>
@@ -541,6 +555,7 @@
       </div>
       <div class="course-status" id="courseStatus"></div>
       <select id="clubResults" class="club-results" style="display:none;"></select>
+      <select id="coursePicker" class="club-results course-picker" style="display:none;"></select>
     </div>
 
     <div class="players-label" data-i18n="players_label">Spelare (max 4)</div>
@@ -941,12 +956,44 @@
     }
     return null;
   }
+  function findAllKnownCourses(clubName) {
+    var key = (clubName || '').trim().toLowerCase();
+    if (!key) return [];
+    var specific = [], generic = [];
+    for (var i = 0; i < KNOWN_COURSES.length; i++) {
+      var m = KNOWN_COURSES[i].match;
+      var keywords = Array.isArray(m) ? m : [m];
+      var matchedSpecific = false, matchedGeneric = false;
+      for (var j = 0; j < keywords.length; j++) {
+        if (!keywords[j] || key.indexOf(keywords[j]) === -1) continue;
+        if (keywords[j] === 'albatross') matchedGeneric = true;
+        else matchedSpecific = true;
+      }
+      if (matchedSpecific) specific.push(KNOWN_COURSES[i]);
+      else if (matchedGeneric) generic.push(KNOWN_COURSES[i]);
+    }
+    // a precise course name (e.g. "Birdiebanan") should resolve directly;
+    // only fall back to showing every course when nothing more specific matched
+    // (e.g. a generic "Albatross Golfklubb" from GPS)
+    return specific.length > 0 ? specific : generic;
+  }
+  function findCourseByKey(key) {
+    if (!key) return null;
+    for (var i = 0; i < KNOWN_COURSES.length; i++) {
+      if (KNOWN_COURSES[i].name === key) return KNOWN_COURSES[i];
+    }
+    return null;
+  }
   function lookupCourseStrokeIndex(clubName) {
     var course = findKnownCourse(clubName);
     return (course && course.strokeIndex) ? course : null;
   }
   function lookupSlopeTable(clubName) {
-    var course = findKnownCourse(clubName);
+    // prefer the specific course the user actually resolved/picked (important
+    // once a club matches several courses, e.g. Albatross GK) over re-guessing
+    // from the free-text club name, which could pick the wrong course's slope data.
+    var course = (typeof state !== 'undefined' && state.activeCourseKey) ? findCourseByKey(state.activeCourseKey) : null;
+    if (!course) course = findKnownCourse(clubName);
     if (!course || !course.slope) return null;
     return { name: course.name, men: course.slope.men, women: course.slope.women, ratedHoles: course.slopeHolesRated || 18 };
   }
@@ -1189,15 +1236,28 @@
     showToast(t('toast_hole_in_one'));
   }
 
-  // ---- theme (dark / light) ----
+  // ---- theme (4 färgteman: dark / light / midnight / sand) ----
+  var THEME_ORDER = ['dark', 'light', 'midnight', 'sand'];
+  var THEME_ICONS = { dark: '🌙', light: '☀️', midnight: '🌌', sand: '🏖️' };
   var currentTheme = 'dark';
-  try { var savedTheme = localStorage.getItem(STORAGE_THEME); if (savedTheme === 'light') currentTheme = 'light'; } catch (e) {}
+  try {
+    var savedTheme = localStorage.getItem(STORAGE_THEME);
+    if (savedTheme && THEME_ORDER.indexOf(savedTheme) !== -1) currentTheme = savedTheme;
+  } catch (e) {}
   function applyTheme(theme) {
     currentTheme = theme;
-    document.body.classList.toggle('theme-light', theme === 'light');
+    THEME_ORDER.forEach(function (name) {
+      document.body.classList.toggle('theme-' + name, theme === name);
+    });
     var btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+    if (btn) btn.textContent = THEME_ICONS[theme] || '🌙';
     try { localStorage.setItem(STORAGE_THEME, theme); } catch (e) {}
+  }
+  function cycleTheme() {
+    var idx = THEME_ORDER.indexOf(currentTheme);
+    var next = THEME_ORDER[(idx + 1) % THEME_ORDER.length];
+    applyTheme(next);
+    showToast(t('theme_name_' + next));
   }
   function courseLabel(round) {
     var club = round.club || round.course || '';
@@ -1211,6 +1271,7 @@
     parPerHole = defaultParPerHole(holesCount);
     return {
       club: '',
+      activeCourseKey: null,
       players: ['', ''],
       handicaps: ['', ''],
       extras: ['', ''],
@@ -1347,6 +1408,7 @@
       }
       if (typeof r.club === 'string') state.club = r.club;
       else if (typeof r.course === 'string') state.club = r.course;
+      state.activeCourseKey = (typeof r.activeCourseKey === 'string') ? r.activeCourseKey : null;
       state.handicaps = (r.handicaps && r.handicaps.length === state.players.length) ? r.handicaps : state.players.map(function () { return ''; });
       state.extras = (r.extras && r.extras.length === state.players.length) ? r.extras : state.players.map(function () { return ''; });
       state.genders = (r.genders && r.genders.length === state.players.length) ? r.genders : state.players.map(function () { return ''; });
@@ -2358,7 +2420,9 @@
   timeInput.addEventListener('change', function (e) { state.startTime = e.target.value; render(); });
   clubInput.addEventListener('input', function (e) {
     state.club = e.target.value;
+    state.activeCourseKey = null;
     clubResultsSelect.style.display = 'none';
+    hideCoursePicker();
     persistRound();
   });
   // ---- course guide images (overview + per-hole) ----
@@ -2377,8 +2441,9 @@
   }
 
   function updateMapGuide() {
-    var known = findKnownCourse(state.club);
-    var slug = known && known.mapSlug;
+    var matches = findAllKnownCourses(state.club);
+    var withMap = matches.filter(function (c) { return c.mapSlug; })[0];
+    var slug = withMap && withMap.mapSlug;
     if (!slug) {
       mapGuidePanel.style.display = 'none';
       currentMapSlug = null;
@@ -2449,6 +2514,7 @@
 
   function applyKnownCourseData(known, showToastMsg) {
     if (!known) { updateMapGuide(); return; }
+    state.activeCourseKey = known.name;
     var courseHoles = known.parPerHole ? known.parPerHole.length : (known.strokeIndex ? known.strokeIndex.length : null);
     if (courseHoles && courseHoles !== HOLES) {
       // only auto-switch the round length if nothing has been entered yet — never silently discard scores
@@ -2494,9 +2560,57 @@
     if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
   }
 
+  var pendingCourseMatches = [];
+  var coursePicker = document.getElementById('coursePicker');
+  function hideCoursePicker() {
+    coursePicker.style.display = 'none';
+    coursePicker.innerHTML = '';
+    pendingCourseMatches = [];
+  }
+  function showCoursePicker(matches) {
+    pendingCourseMatches = matches;
+    coursePicker.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = t('course_picker_placeholder');
+    coursePicker.appendChild(placeholder);
+    matches.forEach(function (course, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = course.courseName || course.name;
+      coursePicker.appendChild(opt);
+    });
+    coursePicker.value = '';
+    coursePicker.style.display = '';
+  }
+  // A club can map to more than one course in our database (e.g. Albatross GK
+  // has three). Rather than silently guessing which one, show every match and
+  // require an explicit pick — unless there's only one, in which case just use it.
+  function resolveClubCourses(clubName, showToastMsg) {
+    var matches = findAllKnownCourses(clubName);
+    if (matches.length === 0) {
+      hideCoursePicker();
+      updateMapGuide();
+      return matches;
+    }
+    if (matches.length === 1) {
+      hideCoursePicker();
+      applyKnownCourseData(matches[0], showToastMsg);
+      return matches;
+    }
+    showCoursePicker(matches);
+    return matches;
+  }
+  coursePicker.addEventListener('change', function (e) {
+    if (e.target.value === '') return;
+    var course = pendingCourseMatches[Number(e.target.value)];
+    if (!course) return;
+    applyKnownCourseData(course, false);
+    showToast(t('toast_course_selected', { course: course.courseName || course.name }));
+  });
+
   clubInput.addEventListener('blur', function (e) {
-    var known = lookupCourseStrokeIndex(e.target.value);
-    applyKnownCourseData(known, true);
+    resolveClubCourses(e.target.value, true);
   });
 
   function haversineKm(lat1, lon1, lat2, lon2) {
@@ -2660,10 +2774,11 @@
     var chosen = lastClubResults[Number(idx)];
     if (!chosen) return;
     state.club = chosen.name;
-    var known = lookupCourseStrokeIndex(chosen.name);
     setCourseStatus(t('geo_selected_club', { club: chosen.name }), 'success');
-    if (known) {
-      applyKnownCourseData(known, false);
+    var matches = resolveClubCourses(chosen.name, false);
+    if (matches.length > 1) {
+      showToast(t('toast_club_filled', { club: chosen.name }));
+    } else if (matches.length === 1) {
       showToast(t('toast_club_and_index_filled', { club: chosen.name }));
     } else {
       render();
@@ -2961,7 +3076,7 @@
 
   applyTheme(currentTheme);
   document.getElementById('themeToggleBtn').addEventListener('click', function () {
-    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+    cycleTheme();
   });
 
   function updateHolesToggleUI() {
@@ -3139,7 +3254,11 @@
   renderKnownPlayersList();
   render();
   renderHistory();
-  loadCourseDatabase().then(function () { updateMapGuide(); });
+  loadCourseDatabase().then(function () {
+    updateMapGuide();
+    var matches = findAllKnownCourses(state.club);
+    if (matches.length > 1) showCoursePicker(matches);
+  });
   renderLanguageOptions();
   loadTranslations();
 })();
