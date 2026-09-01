@@ -70,6 +70,30 @@
       "es": "No se encontró ningún club que coincida con \"{query}\". Rellena manualmente.", "fr": "Aucun club trouvé correspondant à « {query} ». Renseignez manuellement.",
       "it": "Nessun circolo trovato corrispondente a \"{query}\". Compila manualmente.", "de": "Kein Club gefunden, der zu \"{query}\" passt. Bitte manuell eingeben."
     },
+    "search_trying_place": {
+      "sv": "Ingen klubb med det namnet — provar att söka nära orten \"{query}\" …",
+      "no": "Ingen klubb med det navnet — prøver å søke nær stedet «{query}» …",
+      "da": "Ingen klub med det navn — prøver at søge nær stedet \"{query}\" …",
+      "fi": "Ei seuraa tuolla nimellä — yritetään hakea paikkakunnan \"{query}\" läheltä …",
+      "is": "Enginn klúbbur með því nafni — reyni að leita nálægt staðnum \"{query}\" …",
+      "en": "No club with that name — trying to search near the place \"{query}\" …",
+      "es": "Ningún club con ese nombre — probando a buscar cerca del lugar \"{query}\"…",
+      "fr": "Aucun club portant ce nom — tentative de recherche près du lieu « {query} »…",
+      "it": "Nessun circolo con quel nome — provo a cercare vicino alla località \"{query}\"…",
+      "de": "Kein Club mit diesem Namen — versuche, in der Nähe des Orts \"{query}\" zu suchen …"
+    },
+    "search_results_found_near": {
+      "sv": "{n} banor hittade nära {place} — välj i listan nedan",
+      "no": "{n} baner funnet nær {place} — velg fra listen under",
+      "da": "{n} baner fundet nær {place} — vælg fra listen nedenfor",
+      "fi": "{n} rataa löytyi lähellä paikkaa {place} — valitse alta",
+      "is": "{n} vellir fundust nálægt {place} — veldu úr listanum fyrir neðan",
+      "en": "{n} courses found near {place} — choose from the list below",
+      "es": "{n} campos encontrados cerca de {place} — elige de la lista de abajo",
+      "fr": "{n} parcours trouvés près de {place} — choisissez dans la liste ci-dessous",
+      "it": "{n} percorsi trovati vicino a {place} — scegli dall'elenco qui sotto",
+      "de": "{n} Plätze gefunden in der Nähe von {place} — wähle aus der Liste unten"
+    },
     "search_results_found": {
       "sv": "{n} klubbar hittade — välj i listan nedan", "no": "{n} klubber funnet — velg fra listen under", "da": "{n} klubber fundet — vælg fra listen nedenfor",
       "fi": "{n} seuraa löytyi — valitse alta", "is": "{n} klúbbar fundust — veldu úr listanum fyrir neðan", "en": "{n} clubs found — choose from the list below",

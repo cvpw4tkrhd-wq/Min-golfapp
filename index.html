@@ -730,7 +730,7 @@
     <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
   </div>
 
-  <div id="versionFooter" class="version-footer">v1.54 · 2026-08-06</div>
+  <div id="versionFooter" class="version-footer">v1.55 · 2026-08-06</div>
 
   <div class="confirm-inline" id="confirmImport">
     <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
@@ -2847,6 +2847,21 @@
     });
   }
 
+  // Nominatim is a completely separate OpenStreetMap service from Overpass (different
+  // servers/infrastructure), so it can succeed even when the Overpass mirrors are all
+  // struggling — and it lets us treat what's typed as a *place* ("Trollhättan") rather
+  // than only as a literal club name.
+  function geocodePlaceName(query) {
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=se&q=' + encodeURIComponent(query);
+    return fetchWithTimeout(url, {}, 8000).then(function (resp) {
+      if (!resp.ok) throw new Error('status ' + resp.status);
+      return resp.json();
+    }).then(function (results) {
+      if (!results || !results.length) return null;
+      return { lat: Number(results[0].lat), lon: Number(results[0].lon), displayName: results[0].display_name };
+    });
+  }
+
   function searchClubByName() {
     var query = (clubInput.value || '').trim();
     if (query.length < 3) {
@@ -2859,23 +2874,56 @@
     setCourseStatus(t('search_searching', { query: query }));
     clubResultsSelect.style.display = 'none';
 
+    function tryPlaceFallback() {
+      if (myToken !== clubSearchToken) return;
+      setCourseStatus(t('search_trying_place', { query: query }));
+      return geocodePlaceName(query).then(function (place) {
+        if (myToken !== clubSearchToken || !place) return null;
+        return overpassGolfCourses(place.lat, place.lon, 25000).then(function (candidates) {
+          if (myToken !== clubSearchToken) return;
+          var seen = {};
+          var deduped = [];
+          candidates.forEach(function (c) {
+            if (!seen[c.name]) { seen[c.name] = true; deduped.push(c); }
+          });
+          if (deduped.length === 0) return null;
+          renderClubResults(deduped);
+          setCourseStatus(t('search_results_found_near', { n: deduped.length, place: query }), 'success');
+          return true;
+        });
+      });
+    }
+
     overpassGolfCoursesByName(query).then(function (candidates) {
-      if (myToken !== clubSearchToken) return; // a newer search has since started — drop this one
+      if (myToken !== clubSearchToken) return;
       var seen = {};
       var deduped = [];
       candidates.forEach(function (c) {
         if (!seen[c.name]) { seen[c.name] = true; deduped.push(c); }
       });
-      if (deduped.length === 0) {
-        setCourseStatus(t('search_no_results', { query: query }), 'error');
-        showToast(t('toast_no_club_found'));
+      if (deduped.length > 0) {
+        renderClubResults(deduped);
         return;
       }
-      renderClubResults(deduped);
-    }).catch(function (err) {
-      if (myToken !== clubSearchToken) return; // stale — a newer search already showed its own result
-      setCourseStatus((err && err.message) || t('geo_could_not_fetch'), 'error');
-      showToast(t('toast_locate_failed'));
+      // no club literally named that — maybe it's a place name instead
+      return tryPlaceFallback().then(function (found) {
+        if (myToken !== clubSearchToken || found) return;
+        setCourseStatus(t('search_no_results', { query: query }), 'error');
+        showToast(t('toast_no_club_found'));
+      });
+    }).catch(function () {
+      if (myToken !== clubSearchToken) return;
+      // Overpass name-search failed outright — try the independent Nominatim + proximity route
+      // before giving up, since it's a different service that might still be reachable.
+      return tryPlaceFallback().then(function (found) {
+        if (myToken !== clubSearchToken || found) return;
+        setCourseStatus(t('geo_lookup_failed'), 'error');
+        showToast(t('toast_locate_failed'));
+      }).catch(function () {
+        if (myToken !== clubSearchToken) return;
+        setCourseStatus(t('geo_lookup_failed'), 'error');
+        showToast(t('toast_locate_failed'));
+      });
     }).finally(function () {
       searchClubBtn.disabled = false;
       searchClubBtn.classList.remove('loading');
