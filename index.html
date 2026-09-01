@@ -730,7 +730,7 @@
     <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
   </div>
 
-  <div id="versionFooter" class="version-footer">v1.53 · 2026-08-06</div>
+  <div id="versionFooter" class="version-footer">v1.54 · 2026-08-06</div>
 
   <div class="confirm-inline" id="confirmImport">
     <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
@@ -2680,7 +2680,7 @@
     'https://z.overpass-api.de/api/interpreter',
     'https://lz4.overpass-api.de/api/interpreter'
   ];
-  var OVERPASS_TIMEOUT_MS = 6000;
+  var OVERPASS_TIMEOUT_MS = 12000;
 
   function fetchWithTimeout(url, options, timeoutMs) {
     var controller = window.AbortController ? new AbortController() : null;
@@ -2697,7 +2697,7 @@
   // Fires the query at every mirror at the same time and uses whichever answers first,
   // instead of waiting for one to fully time out before trying the next — much faster
   // in practice since a single slow/unresponsive mirror no longer blocks the whole search.
-  function fetchOverpass(query) {
+  function fetchOverpassOnce(query) {
     var attempts = OVERPASS_ENDPOINTS.map(function (url) {
       return fetchWithTimeout(url, {
         method: 'POST',
@@ -2710,20 +2710,33 @@
     });
 
     if (window.Promise && Promise.any) {
-      return Promise.any(attempts).catch(function () {
-        throw new Error(t('geo_lookup_failed'));
-      });
+      return Promise.any(attempts);
     }
     // Fallback for older browsers without Promise.any: resolve with the first success,
     // reject only once every attempt has failed.
     return new Promise(function (resolve, reject) {
       var remaining = attempts.length;
+      var lastErr = null;
       attempts.forEach(function (p) {
-        p.then(resolve).catch(function () {
+        p.then(resolve).catch(function (e) {
+          lastErr = e;
           remaining--;
-          if (remaining === 0) reject(new Error(t('geo_lookup_failed')));
+          if (remaining === 0) reject(lastErr);
         });
       });
+    });
+  }
+
+  // The very first request to these mirrors is often the slowest one — establishing a
+  // fresh TLS connection to an unfamiliar host can take longer than the timeout on a
+  // mobile connection, even though a same-session retry then completes quickly because
+  // the connection is already warm. So if every mirror fails, silently try the whole
+  // race one more time before actually giving up and showing an error.
+  function fetchOverpass(query) {
+    return fetchOverpassOnce(query).catch(function () {
+      return fetchOverpassOnce(query);
+    }).catch(function () {
+      throw new Error(t('geo_lookup_failed'));
     });
   }
 
