@@ -730,7 +730,7 @@
     <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
   </div>
 
-  <div id="versionFooter" class="version-footer">v1.52 · 2026-08-06</div>
+  <div id="versionFooter" class="version-footer">v1.53 · 2026-08-06</div>
 
   <div class="confirm-inline" id="confirmImport">
     <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
@@ -2748,6 +2748,7 @@
   }
 
   var lastClubResults = [];
+  var clubSearchToken = 0; // bumped on every new search; stale responses check this and bail out
 
   function renderClubResults(deduped) {
     lastClubResults = deduped.slice(0, 8);
@@ -2767,6 +2768,7 @@
   }
 
   function findNearbyClubs() {
+    var myToken = ++clubSearchToken;
     locateBtn.disabled = true;
     locateBtn.classList.add('loading');
     setCourseStatus(t('geo_fetching_position'));
@@ -2774,8 +2776,10 @@
 
     getPosition().then(function (pos) {
       var lat = pos.coords.latitude, lon = pos.coords.longitude;
+      if (myToken !== clubSearchToken) return; // a newer search has since started — drop this one
       setCourseStatus(t('geo_searching_clubs'));
       return overpassGolfCourses(lat, lon, 25000).then(function (candidates) {
+        if (myToken !== clubSearchToken) return;
         // dedupe by name, keep nearest occurrence of each
         var seen = {};
         var deduped = [];
@@ -2790,6 +2794,7 @@
         renderClubResults(deduped);
       });
     }).catch(function (err) {
+      if (myToken !== clubSearchToken) return; // stale — a newer search already showed its own result
       var msg = t('geo_could_not_fetch');
       if (err && err.code === 1) msg = t('geo_permission_denied');
       else if (err && err.code === 2) msg = t('geo_could_not_determine');
@@ -2835,12 +2840,14 @@
       setCourseStatus(t('search_type_name_first'), 'error');
       return;
     }
+    var myToken = ++clubSearchToken;
     searchClubBtn.disabled = true;
     searchClubBtn.classList.add('loading');
     setCourseStatus(t('search_searching', { query: query }));
     clubResultsSelect.style.display = 'none';
 
     overpassGolfCoursesByName(query).then(function (candidates) {
+      if (myToken !== clubSearchToken) return; // a newer search has since started — drop this one
       var seen = {};
       var deduped = [];
       candidates.forEach(function (c) {
@@ -2853,6 +2860,7 @@
       }
       renderClubResults(deduped);
     }).catch(function (err) {
+      if (myToken !== clubSearchToken) return; // stale — a newer search already showed its own result
       setCourseStatus((err && err.message) || t('geo_could_not_fetch'), 'error');
       showToast(t('toast_locate_failed'));
     }).finally(function () {
