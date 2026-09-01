@@ -14,16 +14,18 @@
       "de": "CLUBRUNDE · 1–4 SPIELER"
     },
     "app_title": {
-      "sv": "Niohåls-scorekort", "no": "Ni-hulls scorekort", "da": "Ni-huls scorekort",
-      "fi": "Yhdeksän väylän tuloskortti", "is": "Níu holu skorkort", "en": "Nine-Hole Scorecard",
-      "es": "Tarjeta de nueve hoyos", "fr": "Carte de score neuf trous", "it": "Cartellino nove buche",
-      "de": "Neun-Loch-Scorekarte"
+      "sv": "Golfscorekort", "no": "Golfscorekort", "da": "Golfscorekort",
+      "fi": "Golf-tuloskortti", "is": "Golfskorkort", "en": "Golf Scorecard",
+      "es": "Tarjeta de golf", "fr": "Carte de score de golf", "it": "Cartellino da golf",
+      "de": "Golf-Scorekarte"
     },
-    "subtitle": {
-      "sv": "9 hål · alla par 3 · par för rundan", "no": "9 hull · alle par 3 · par for runden", "da": "9 huller · alle par 3 · par for runden",
-      "fi": "9 väylää · kaikki par 3 · kierroksen par", "is": "9 holur · allar par 3 · par fyrir hringinn", "en": "9 holes · all par 3 · round par",
-      "es": "9 hoyos · todos par 3 · par de la ronda", "fr": "9 trous · tous par 3 · par du parcours", "it": "9 buche · tutte par 3 · par del giro",
-      "de": "9 Löcher · alle Par 3 · Runden-Par"
+    "subtitle_holes_count": {
+      "sv": "{n} hål", "no": "{n} hull", "da": "{n} huller", "fi": "{n} väylää", "is": "{n} holur",
+      "en": "{n} holes", "es": "{n} hoyos", "fr": "{n} trous", "it": "{n} buche", "de": "{n} Löcher"
+    },
+    "subtitle_par_label": {
+      "sv": "par", "no": "par", "da": "par", "fi": "par", "is": "par",
+      "en": "par", "es": "par", "fr": "par", "it": "par", "de": "Par"
     },
     "date_label": {
       "sv": "Datum", "no": "Dato", "da": "Dato", "fi": "Päivämäärä", "is": "Dagsetning",
@@ -44,6 +46,55 @@
     "locate_btn_title": {
       "sv": "Hitta klubbar i närheten", "no": "Finn klubber i nærheten", "da": "Find klubber i nærheden", "fi": "Etsi lähellä olevia seuroja", "is": "Finna klúbba í nágrenninu",
       "en": "Find nearby clubs", "es": "Buscar clubes cercanos", "fr": "Trouver des clubs à proximité", "it": "Trova circoli vicini", "de": "Clubs in der Nähe finden"
+    },
+    "search_club_btn_title": {
+      "sv": "Sök klubb på namn", "no": "Søk klubb på navn", "da": "Søg klub på navn", "fi": "Etsi seuraa nimellä", "is": "Leita að klúbbi eftir nafni",
+      "en": "Search club by name", "es": "Buscar club por nombre", "fr": "Rechercher un club par nom", "it": "Cerca circolo per nome", "de": "Club nach Namen suchen"
+    },
+    "search_type_name_first": {
+      "sv": "Skriv minst 3 bokstäver i klubbfältet först", "no": "Skriv minst 3 bokstaver i klubbfeltet først", "da": "Skriv mindst 3 bogstaver i klubfeltet først",
+      "fi": "Kirjoita ensin vähintään 3 kirjainta seurakenttään", "is": "Sláðu inn minnst 3 stafi í klúbbreitinn fyrst", "en": "Type at least 3 letters in the club field first",
+      "es": "Escribe al menos 3 letras en el campo del club primero", "fr": "Saisissez au moins 3 lettres dans le champ du club d'abord",
+      "it": "Digita almeno 3 lettere nel campo del circolo prima", "de": "Gib zuerst mindestens 3 Buchstaben im Clubfeld ein"
+    },
+    "search_searching": {
+      "sv": "Söker klubbar som matchar \"{query}\" …", "no": "Søker klubber som matcher «{query}» …", "da": "Søger klubber, der matcher \"{query}\" …",
+      "fi": "Haetaan seuroja, jotka vastaavat \"{query}\" …", "is": "Leita að klúbbum sem passa við \"{query}\" …", "en": "Searching for clubs matching \"{query}\" …",
+      "es": "Buscando clubes que coincidan con \"{query}\"…", "fr": "Recherche de clubs correspondant à « {query} »…",
+      "it": "Ricerca circoli corrispondenti a \"{query}\"…", "de": "Suche nach Clubs, die zu \"{query}\" passen …"
+    },
+    "search_no_results": {
+      "sv": "Ingen klubb hittades som matchar \"{query}\". Fyll i manuellt.", "no": "Ingen klubb funnet som matcher «{query}». Fyll inn manuelt.",
+      "da": "Ingen klub fundet, der matcher \"{query}\". Udfyld manuelt.", "fi": "Hakuehtoa \"{query}\" vastaavaa seuraa ei löytynyt. Täytä manuaalisesti.",
+      "is": "Enginn klúbbur fannst sem passar við \"{query}\". Fylltu út handvirkt.", "en": "No club found matching \"{query}\". Fill in manually.",
+      "es": "No se encontró ningún club que coincida con \"{query}\". Rellena manualmente.", "fr": "Aucun club trouvé correspondant à « {query} ». Renseignez manuellement.",
+      "it": "Nessun circolo trovato corrispondente a \"{query}\". Compila manualmente.", "de": "Kein Club gefunden, der zu \"{query}\" passt. Bitte manuell eingeben."
+    },
+    "search_results_found": {
+      "sv": "{n} klubbar hittade — välj i listan nedan", "no": "{n} klubber funnet — velg fra listen under", "da": "{n} klubber fundet — vælg fra listen nedenfor",
+      "fi": "{n} seuraa löytyi — valitse alta", "is": "{n} klúbbar fundust — veldu úr listanum fyrir neðan", "en": "{n} clubs found — choose from the list below",
+      "es": "{n} clubes encontrados — elige de la lista de abajo", "fr": "{n} clubs trouvés — choisissez dans la liste ci-dessous",
+      "it": "{n} circoli trovati — scegli dall'elenco qui sotto", "de": "{n} Clubs gefunden — wähle aus der Liste unten"
+    },
+    "search_choose_from_list": {
+      "sv": "{n} klubbar hittade — välj en", "no": "{n} klubber funnet — velg en", "da": "{n} klubber fundet — vælg en",
+      "fi": "{n} seuraa löytyi — valitse yksi", "is": "{n} klúbbar fundust — veldu einn", "en": "{n} clubs found — choose one",
+      "es": "{n} clubes encontrados — elige uno", "fr": "{n} clubs trouvés — choisissez-en un",
+      "it": "{n} circoli trovati — scegline uno", "de": "{n} Clubs gefunden — wähle einen aus"
+    },
+    "geo_no_club_25km": {
+      "sv": "Ingen golfklubb hittades inom 25 km. Fyll i manuellt.", "no": "Ingen golfklubb funnet innen 25 km. Fyll inn manuelt.",
+      "da": "Ingen golfklub fundet inden for 25 km. Udfyld manuelt.", "fi": "Golfseuraa ei löytynyt 25 km:n säteeltä. Täytä manuaalisesti.",
+      "is": "Enginn golfklúbbur fannst innan 25 km. Fylltu út handvirkt.", "en": "No golf club found within 25 km. Fill in manually.",
+      "es": "No se encontró ningún club de golf en un radio de 25 km. Rellena manualmente.", "fr": "Aucun club de golf trouvé dans un rayon de 25 km. Renseignez manuellement.",
+      "it": "Nessun circolo di golf trovato entro 25 km. Compila manualmente.", "de": "Kein Golfclub innerhalb von 25 km gefunden. Bitte manuell eingeben."
+    },
+    "geo_permission_denied": {
+      "sv": "Platsåtkomst nekad. Tillåt plats för Safari i Inställningar.", "no": "Posisjonstilgang avvist. Tillat posisjon for Safari i Innstillinger.",
+      "da": "Placeringsadgang nægtet. Tillad placering for Safari i Indstillinger.", "fi": "Sijaintioikeus evätty. Salli sijainti Safarille asetuksista.",
+      "is": "Aðgangi að staðsetningu hafnað. Leyfðu staðsetningu fyrir Safari í Stillingum.", "en": "Location access denied. Allow location for Safari in Settings.",
+      "es": "Acceso a la ubicación denegado. Permite la ubicación para Safari en Ajustes.", "fr": "Accès à la position refusé. Autorisez la position pour Safari dans Réglages.",
+      "it": "Accesso alla posizione negato. Consenti la posizione per Safari nelle Impostazioni.", "de": "Standortzugriff verweigert. Erlaube den Standort für Safari in den Einstellungen."
     },
     "players_label": {
       "sv": "Spelare (max 4)", "no": "Spillere (maks 4)", "da": "Spillere (maks. 4)", "fi": "Pelaajat (enintään 4)", "is": "Leikmenn (hámark 4)",

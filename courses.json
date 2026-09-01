@@ -1,76 +1,641 @@
 {
-  "_readme": "Databas över golfklubbar för scorekorts-appen. 'match' är en gemener-textbit som jämförs mot vad användaren skriver i Golfklubb-fältet (första träffen vinner, så mer specifika match-strängar ska ligga före generella). strokeIndex är klubbens egna publicerade INDX-siffror rakt av (appen räknar själv om till inbördes rangordning). slope.men/slope.women är Course Rating (cr), Slope Rating (slope) och Par enligt klubbens officiella slopetabell — för banor med flera tees anges standardtee (gul herr / röd dam) här, övriga tees ligger under 'tees' som referens. Endast data kontrollerad mot officiell källa (scorekort, klubbens slopetabell-PDF eller klubbens webbsida) läggs till här — fel siffror är värre än inga alls. EJ tillagda pga endast overifierade tredjepartssiffror: Borås GK, Ale GK, Sankt Jörgen Park (research 2026-07-27).",
+  "_readme": "Databas över golfklubbar för scorekorts-appen. 'match' är en gemener-textbit som jämförs mot vad användaren skriver i Golfklubb-fältet (första träffen vinner, så mer specifika match-strängar ska ligga före generella). strokeIndex är klubbens egna publicerade INDX-siffror rakt av (appen räknar själv om till inbördes rangordning). slope.men/slope.women är Course Rating (cr), Slope Rating (slope) och Par enligt klubbens officiella slopetabell — för banor med flera tees anges standardtee (gul herr / röd dam) här, övriga tees ligger under 'tees' som referens. Endast data kontrollerad mot officiell källa (scorekort, klubbens slopetabell-PDF eller klubbens webbsida) läggs till här — fel siffror är värre än inga alls. EJ tillagda pga endast overifierade tredjepartssiffror: Ale GK, Sankt Jörgen Park (research 2026-07-27). Borås GK tillagd 2026-08-06 med fullständig officiell data.",
   "version": 2,
-  "updated": "2026-07-27",
+  "updated": "2026-08-06",
   "courses": [
     {
-      "match": ["albatrossen", "albatross"],
+      "match": "albatrossen",
+      "genericMatch": "albatross",
       "name": "Albatross GK (Albatrossen, 18 hål)",
       "courseName": "Albatrossen (18 hål)",
       "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-05) samt klubbens officiella slope-PDF (albatrossgolfklubb.se, värderad 2013-07-11). Standardtee gul (herr) / röd (dam).",
-      "parPerHole": [4, 3, 4, 4, 3, 4, 5, 5, 4, 3, 4, 4, 4, 4, 4, 3, 5, 4],
-      "strokeIndex": [6, 16, 8, 4, 18, 10, 2, 12, 14, 13, 3, 11, 15, 9, 1, 17, 5, 7],
+      "parPerHole": [
+        4,
+        3,
+        4,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        5,
+        4
+      ],
+      "strokeIndex": [
+        6,
+        16,
+        8,
+        4,
+        18,
+        10,
+        2,
+        12,
+        14,
+        13,
+        3,
+        11,
+        15,
+        9,
+        1,
+        17,
+        5,
+        7
+      ],
       "slope": {
-        "men": { "cr": 70.8, "slope": 138, "par": 71 },
-        "women": { "cr": 71.3, "slope": 133, "par": 71 }
+        "men": {
+          "cr": 70.8,
+          "slope": 138,
+          "par": 71
+        },
+        "women": {
+          "cr": 71.3,
+          "slope": 133,
+          "par": 71
+        }
       },
       "tees": {
-        "men": { "vit": { "cr": 72.4, "slope": 140, "par": 71 }, "gul": { "cr": 70.8, "slope": 138, "par": 71 }, "bla": { "cr": 68.6, "slope": 133, "par": 71 }, "rod": { "cr": 66.5, "slope": 129, "par": 71 } },
-        "women": { "gul": { "cr": 76.6, "slope": 145, "par": 71 }, "bla": { "cr": 73.9, "slope": 139, "par": 71 }, "rod": { "cr": 71.3, "slope": 133, "par": 71 } }
+        "men": {
+          "vit": {
+            "cr": 72.4,
+            "slope": 140,
+            "par": 71
+          },
+          "gul": {
+            "cr": 70.8,
+            "slope": 138,
+            "par": 71
+          },
+          "bla": {
+            "cr": 68.6,
+            "slope": 133,
+            "par": 71
+          },
+          "rod": {
+            "cr": 66.5,
+            "slope": 129,
+            "par": 71
+          }
+        },
+        "women": {
+          "gul": {
+            "cr": 76.6,
+            "slope": 145,
+            "par": 71
+          },
+          "bla": {
+            "cr": 73.9,
+            "slope": 139,
+            "par": 71
+          },
+          "rod": {
+            "cr": 71.3,
+            "slope": 133,
+            "par": 71
+          }
+        }
       }
     },
     {
-      "match": ["birdie", "albatross"],
+      "match": "birdie",
+      "genericMatch": "albatross",
       "name": "Albatross GK (Birdiebanan, hål 19–27)",
       "courseName": "Birdiebanan (18 hål)",
       "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-05): 18-hålsvarvet är samma 9 fysiska hål spelade två gånger med olika index tilldelat andra varvet (kortets faktiska par-summa är 72). Slope-tabellens par 74 är en avsiktlig avvikelse — det är den siffra klubben själv värderat banan mot för Course Rating/Slope-formeln (2013-04-19) och används bara i handicap-uträkningen, inte i själva scorekortet. Standardtee gul (herr) / röd (dam).",
-      "parPerHole": [5, 3, 3, 3, 5, 4, 4, 5, 4, 5, 3, 3, 3, 5, 4, 4, 5, 4],
-      "strokeIndex": [5, 15, 7, 17, 1, 9, 13, 3, 11, 6, 16, 8, 18, 2, 10, 14, 4, 12],
+      "parPerHole": [
+        5,
+        3,
+        3,
+        3,
+        5,
+        4,
+        4,
+        5,
+        4,
+        5,
+        3,
+        3,
+        3,
+        5,
+        4,
+        4,
+        5,
+        4
+      ],
+      "strokeIndex": [
+        5,
+        15,
+        7,
+        17,
+        1,
+        9,
+        13,
+        3,
+        11,
+        6,
+        16,
+        8,
+        18,
+        2,
+        10,
+        14,
+        4,
+        12
+      ],
       "slope": {
-        "men": { "cr": 71.4, "slope": 132, "par": 74 },
-        "women": { "cr": 72.8, "slope": 130, "par": 74 }
+        "men": {
+          "cr": 71.4,
+          "slope": 132,
+          "par": 74
+        },
+        "women": {
+          "cr": 72.8,
+          "slope": 130,
+          "par": 74
+        }
       },
       "tees": {
-        "men": { "vit": { "cr": 73.5, "slope": 137, "par": 74 }, "gul": { "cr": 71.4, "slope": 132, "par": 74 }, "bla": { "cr": 68.9, "slope": 128, "par": 74 }, "rod": { "cr": 67.8, "slope": 125, "par": 74 } },
-        "women": { "gul": { "cr": 77.2, "slope": 140, "par": 74 }, "bla": { "cr": 74.2, "slope": 133, "par": 74 }, "rod": { "cr": 72.8, "slope": 130, "par": 74 } }
+        "men": {
+          "vit": {
+            "cr": 73.5,
+            "slope": 137,
+            "par": 74
+          },
+          "gul": {
+            "cr": 71.4,
+            "slope": 132,
+            "par": 74
+          },
+          "bla": {
+            "cr": 68.9,
+            "slope": 128,
+            "par": 74
+          },
+          "rod": {
+            "cr": 67.8,
+            "slope": 125,
+            "par": 74
+          }
+        },
+        "women": {
+          "gul": {
+            "cr": 77.2,
+            "slope": 140,
+            "par": 74
+          },
+          "bla": {
+            "cr": 74.2,
+            "slope": 133,
+            "par": 74
+          },
+          "rod": {
+            "cr": 72.8,
+            "slope": 130,
+            "par": 74
+          }
+        }
       }
     },
     {
-      "match": ["albatross", "eaglekorten"],
+      "match": "eaglekorten",
+      "genericMatch": "albatross",
       "name": "Albatross GK (Eaglekorten)",
       "courseName": "Eaglekorten (9 hål, par-3)",
       "verified": "Kontrollräknat mot spelares eget scorekort 2026-07-01 (SHCP 39 herr / 45 dam vid HCP 54,0) samt klubbens officiella slope-PDF:er.",
       "mapSlug": "albatross-golfklubb",
-      "strokeIndex": [13, 11, 5, 1, 15, 9, 7, 17, 3],
+      "strokeIndex": [
+        13,
+        11,
+        5,
+        1,
+        15,
+        9,
+        7,
+        17,
+        3
+      ],
       "slope": {
-        "men": { "cr": 53.7, "slope": 83, "par": 54 },
-        "women": { "cr": 56.4, "slope": 89, "par": 54 }
+        "men": {
+          "cr": 53.7,
+          "slope": 83,
+          "par": 54
+        },
+        "women": {
+          "cr": 56.4,
+          "slope": 89,
+          "par": 54
+        }
       }
     },
     {
       "match": "lerjedalen",
       "name": "Lerjedalens GK (18 hål)",
       "verified": "Par och slagindex per hål från officiellt scorekort (foto, kontrollerat 2026-08-05) — kontrollräknat mot UT 35 / IN 37 / TOT 72 och att alla 18 indexsiffror förekommer exakt en gång. Endast damer röd tee slope officiellt bekräftad (lerjedalen.se/spela/slope: CR 72.6 / Slope 122). Herrarnas CR/Slope fanns bara hos tredjepart och har därför utelämnats i väntan på officiell källa.",
-      "parPerHole": [4, 4, 3, 5, 4, 3, 4, 3, 5, 4, 3, 5, 4, 4, 5, 5, 3, 4],
-      "strokeIndex": [4, 6, 18, 2, 12, 10, 14, 16, 8, 9, 17, 11, 5, 13, 3, 1, 15, 7],
+      "parPerHole": [
+        4,
+        4,
+        3,
+        5,
+        4,
+        3,
+        4,
+        3,
+        5,
+        4,
+        3,
+        5,
+        4,
+        4,
+        5,
+        5,
+        3,
+        4
+      ],
+      "strokeIndex": [
+        4,
+        6,
+        18,
+        2,
+        12,
+        10,
+        14,
+        16,
+        8,
+        9,
+        17,
+        11,
+        5,
+        13,
+        3,
+        1,
+        15,
+        7
+      ],
       "slope": {
-        "women": { "cr": 72.6, "slope": 122, "par": 72 }
+        "women": {
+          "cr": 72.6,
+          "slope": 122,
+          "par": 72
+        }
       }
     },
     {
-      "match": ["kungälv", "kungalv", "kode"],
+      "match": [
+        "kungälv",
+        "kungalv",
+        "kode"
+      ],
       "name": "Kungälv-Kode GK (18 hål)",
       "verified": "Officiellt scorekort (foto från kkgk.se, kontrollerat 2026-08-05). Ersätter tidigare aggregerade siffror som visade sig vara felaktiga (par var faktiskt 71, inte 72). Standardtee gul (herr) / röd (dam). Riktig bana med varierande par per hål (3/4/5/6).",
-      "parPerHole": [4, 5, 3, 6, 3, 5, 4, 3, 4, 3, 4, 3, 5, 3, 4, 4, 4, 4],
-      "strokeIndex": [3, 9, 13, 7, 15, 11, 1, 17, 5, 10, 16, 4, 2, 18, 8, 14, 12, 6],
+      "parPerHole": [
+        4,
+        5,
+        3,
+        6,
+        3,
+        5,
+        4,
+        3,
+        4,
+        3,
+        4,
+        3,
+        5,
+        3,
+        4,
+        4,
+        4,
+        4
+      ],
+      "strokeIndex": [
+        3,
+        9,
+        13,
+        7,
+        15,
+        11,
+        1,
+        17,
+        5,
+        10,
+        16,
+        4,
+        2,
+        18,
+        8,
+        14,
+        12,
+        6
+      ],
       "slope": {
-        "men": { "cr": 70.8, "slope": 135, "par": 71 },
-        "women": { "cr": 70.2, "slope": 131, "par": 71 }
+        "men": {
+          "cr": 70.8,
+          "slope": 135,
+          "par": 71
+        },
+        "women": {
+          "cr": 70.2,
+          "slope": 131,
+          "par": 71
+        }
       },
       "tees": {
-        "men": { "vit": { "cr": 72.4, "slope": 137, "par": 71 }, "gul": { "cr": 70.8, "slope": 135, "par": 71 }, "bla": { "cr": 68.9, "slope": 130, "par": 71 }, "rod": { "cr": 66.5, "slope": 125, "par": 71 } },
-        "women": { "gul": { "cr": 75.4, "slope": 142, "par": 71 }, "bla": { "cr": 73.1, "slope": 137, "par": 71 }, "rod": { "cr": 70.2, "slope": 131, "par": 71 }, "orange": { "cr": 66.7, "slope": 124, "par": 71 } }
+        "men": {
+          "vit": {
+            "cr": 72.4,
+            "slope": 137,
+            "par": 71
+          },
+          "gul": {
+            "cr": 70.8,
+            "slope": 135,
+            "par": 71
+          },
+          "bla": {
+            "cr": 68.9,
+            "slope": 130,
+            "par": 71
+          },
+          "rod": {
+            "cr": 66.5,
+            "slope": 125,
+            "par": 71
+          }
+        },
+        "women": {
+          "gul": {
+            "cr": 75.4,
+            "slope": 142,
+            "par": 71
+          },
+          "bla": {
+            "cr": 73.1,
+            "slope": 137,
+            "par": 71
+          },
+          "rod": {
+            "cr": 70.2,
+            "slope": 131,
+            "par": 71
+          },
+          "orange": {
+            "cr": 66.7,
+            "slope": 124,
+            "par": 71
+          }
+        }
       }
+    },
+    {
+      "match": [
+        "borås norra",
+        "boras norra",
+        "norra banan"
+      ],
+      "genericMatch": [
+        "borås",
+        "boras"
+      ],
+      "name": "Borås Golfklubb (Norra banan, 18 hål)",
+      "courseName": "Norra banan (18 hål)",
+      "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-06) samt Svenska Golfförbundets officiella slopetabeller (Banan värderad 2025-05-14). Kontrollräknat: UT 36 + IN 36 = TOT 72, alla 18 indexsiffror unika. Standardtee vald som en rimlig mellantee (herr \"57\", dam \"53\") av de fem/tre tillgängliga — hör av dig om annan tee spelas normalt så justerar jag.",
+      "parPerHole": [
+        5,
+        4,
+        4,
+        4,
+        3,
+        4,
+        3,
+        4,
+        5,
+        3,
+        4,
+        5,
+        4,
+        4,
+        4,
+        4,
+        3,
+        5
+      ],
+      "strokeIndex": [
+        12,
+        2,
+        10,
+        8,
+        16,
+        4,
+        14,
+        18,
+        6,
+        15,
+        5,
+        7,
+        11,
+        3,
+        17,
+        1,
+        13,
+        9
+      ],
+      "slope": {
+        "men": {
+          "cr": 71.4,
+          "slope": 131,
+          "par": 72
+        },
+        "women": {
+          "cr": 74.6,
+          "slope": 135,
+          "par": 72
+        }
+      },
+      "tees": {
+        "men": {
+          "65": {
+            "cr": 75.6,
+            "slope": 142,
+            "par": 72
+          },
+          "62": {
+            "cr": 74.3,
+            "slope": 140,
+            "par": 72
+          },
+          "57": {
+            "cr": 71.4,
+            "slope": 131,
+            "par": 72
+          },
+          "53": {
+            "cr": 68.6,
+            "slope": 126,
+            "par": 72
+          },
+          "45": {
+            "cr": 64.9,
+            "slope": 116,
+            "par": 72
+          }
+        },
+        "women": {
+          "57": {
+            "cr": 77.7,
+            "slope": 148,
+            "par": 72
+          },
+          "53": {
+            "cr": 74.6,
+            "slope": 135,
+            "par": 72
+          },
+          "45": {
+            "cr": 69.7,
+            "slope": 124,
+            "par": 72
+          }
+        }
+      }
+    },
+    {
+      "match": [
+        "borås södra",
+        "boras sodra",
+        "södra banan"
+      ],
+      "genericMatch": [
+        "borås",
+        "boras"
+      ],
+      "name": "Borås Golfklubb (Södra banan, 18 hål)",
+      "courseName": "Södra banan (18 hål)",
+      "verified": "Officiellt scorekort (foto, kontrollerat 2026-08-06) samt Svenska Golfförbundets officiella slopetabeller (Banan värderad 2025-05-14). Kontrollräknat: UT 35 + IN 34 = TOT 69, alla 18 indexsiffror unika. Standardtee gul (herr) / röd (dam), enligt svensk konvention.",
+      "parPerHole": [
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        4,
+        3,
+        3,
+        4,
+        4,
+        3,
+        4,
+        5,
+        3,
+        3,
+        4,
+        4
+      ],
+      "strokeIndex": [
+        7,
+        13,
+        1,
+        9,
+        17,
+        5,
+        3,
+        15,
+        11,
+        8,
+        16,
+        18,
+        10,
+        2,
+        14,
+        12,
+        4,
+        6
+      ],
+      "slope": {
+        "men": {
+          "cr": 67.3,
+          "slope": 120,
+          "par": 69
+        },
+        "women": {
+          "cr": 67.0,
+          "slope": 117,
+          "par": 69
+        }
+      },
+      "tees": {
+        "men": {
+          "gul": {
+            "cr": 67.3,
+            "slope": 120,
+            "par": 69
+          },
+          "bla": {
+            "cr": 65.1,
+            "slope": 115,
+            "par": 69
+          },
+          "rod": {
+            "cr": 62.9,
+            "slope": 116,
+            "par": 69
+          }
+        },
+        "women": {
+          "gul": {
+            "cr": 72.1,
+            "slope": 128,
+            "par": 69
+          },
+          "bla": {
+            "cr": 69.2,
+            "slope": 127,
+            "par": 69
+          },
+          "rod": {
+            "cr": 67.0,
+            "slope": 117,
+            "par": 69
+          },
+          "orange": {
+            "cr": 60.5,
+            "slope": 103,
+            "par": 69
+          }
+        }
+      }
+    },
+    {
+      "match": [
+        "teknikbanan",
+        "borås teknik",
+        "boras teknik"
+      ],
+      "genericMatch": [
+        "borås",
+        "boras"
+      ],
+      "name": "Borås Golfklubb (Teknikbanan, 9 hål)",
+      "courseName": "Teknikbanan (9 hål, par-3)",
+      "verified": "Ingen officiell slopetabell eller scorekort tillgängligt för denna bana. Par 3 på alla nio hål enligt uppgift (2026-08-06). Slagindex saknas — Index-raden i appen ligger kvar på standardvärden (1-9) tills en verklig indexlista finns, redigera manuellt vid behov. Kan inte användas med HCP-kalkylatorn (🧮) eftersom ingen Course Rating/Slope Rating finns publicerad.",
+      "parPerHole": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
     }
   ]
 }

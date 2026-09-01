@@ -7,22 +7,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Scorekort" />
 <meta name="theme-color" content="#1c3e2d" />
-<meta name="description" content="Gratis niohåls golfscorekort för par-3-banor. Håll koll på resultat, handicap och nettoscore för upp till 4 spelare direkt i mobilen — fungerar offline, installeras som en app." />
+<meta name="description" content="Gratis golfscorekort för 9 eller 18 hål. Håll koll på resultat, handicap, nettoscore och poängbogey för upp till 4 spelare direkt i mobilen — fungerar offline, installeras som en app." />
 <link rel="canonical" href="https://cvpw4tkrhd-wq.github.io/Min-golfapp/" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Niohåls-scorekort — gratis golfscorekort för par-3-banor" />
+<meta property="og:title" content="Golfscorekort — gratis scorekort för 9 och 18 hål" />
 <meta property="og:description" content="Håll koll på resultat, handicap och nettoscore för upp till 4 spelare, direkt i mobilen. Fungerar offline. Gratis och utan reklam." />
 <meta property="og:url" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/" />
 <meta property="og:image" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/icon-512.png" />
 <meta property="og:locale" content="sv_SE" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Niohåls-scorekort — gratis golfscorekort för par-3-banor" />
+<meta name="twitter:title" content="Golfscorekort — gratis scorekort för 9 och 18 hål" />
 <meta name="twitter:description" content="Håll koll på resultat, handicap och nettoscore för upp till 4 spelare, direkt i mobilen. Fungerar offline." />
 <meta name="twitter:image" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/icon-512.png" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-<title>Niohåls-scorekort — Gratis golfscorekort för par-3-banor</title>
+<title>Golfscorekort — Gratis scorekort för 9 och 18 hål</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -499,6 +499,12 @@
   }
   .coffee-footnote a:hover { text-decoration: underline; }
 
+  .version-footer {
+    width: 100%; max-width: 640px; text-align: center; margin: 0 0 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.03em;
+    color: var(--header-subtitle, #a9c2ab); opacity: 0.55;
+  }
+
   .toast {
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2b2b2b;
     color: #f5f0e1; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 16px;
@@ -514,8 +520,6 @@
 </head>
 <body>
 
-  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.48 · 2026-07-27</div>
-
   <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
   <style>
     .js-error-close {
@@ -528,8 +532,8 @@
     <button type="button" class="theme-toggle-btn" id="themeToggleBtn" data-i18n-title="theme_toggle_title" title="Byt färgtema (4 st)">🌙</button>
     <button type="button" class="sound-toggle-btn" id="soundToggleBtn" data-i18n-title="sound_toggle_title" title="Ljud vid birdie/bogey av/på">🔊</button>
     <div class="eyebrow" data-i18n="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
-    <h1 class="title" data-i18n="app_title">Niohåls-scorekort</h1>
-    <div class="subtitle"><span data-i18n="subtitle">9 hål · alla par 3 · par för rundan</span> <span id="parTotalLabel">27</span></div>
+    <h1 class="title" data-i18n="app_title">Golfscorekort</h1>
+    <div class="subtitle"><span id="subtitleHoles">9 hål</span> · <span data-i18n="subtitle_par_label">par</span> <span id="parTotalLabel">27</span></div>
     <div class="lang-row">
       <span class="lang-globe">🌐</span>
       <select id="langSelect" data-i18n-title="lang_toggle_title" title="Språk"></select>
@@ -572,6 +576,7 @@
       <label for="club" data-i18n="club_label">Golfklubb</label>
       <div class="course-input-row">
         <input id="club" type="text" placeholder="T.ex. Djursholms GK" data-i18n-placeholder="club_placeholder" />
+        <button class="locate-btn" id="searchClubBtn" type="button" data-i18n-title="search_club_btn_title" title="Sök klubb på namn">🔍</button>
         <button class="locate-btn" id="locateBtn" type="button" data-i18n-title="locate_btn_title" title="Hitta klubbar i närheten">📍</button>
       </div>
       <div class="course-status" id="courseStatus"></div>
@@ -724,6 +729,8 @@
     <span data-i18n="coffee_footnote">Om du gillar denna app får du gärna tacka mig med att donera en kopp kaffe :)</span>
     <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
   </div>
+
+  <div id="versionFooter" class="version-footer">v1.52 · 2026-08-06</div>
 
   <div class="confirm-inline" id="confirmImport">
     <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
@@ -927,6 +934,7 @@
       if (text !== key) el.placeholder = text;
     });
     document.documentElement.lang = currentLang;
+    rebuildHoleColumns();
     rebuildPlayerRows();
     renderPlayerFields();
     render();
@@ -973,38 +981,26 @@
       });
   }
 
-  function findKnownCourse(clubName) {
-    var key = (clubName || '').trim().toLowerCase();
-    if (!key) return null;
-    for (var i = 0; i < KNOWN_COURSES.length; i++) {
-      var m = KNOWN_COURSES[i].match;
-      var keywords = Array.isArray(m) ? m : [m];
-      for (var j = 0; j < keywords.length; j++) {
-        if (keywords[j] && key.indexOf(keywords[j]) !== -1) return KNOWN_COURSES[i];
-      }
-    }
-    return null;
-  }
   function findAllKnownCourses(clubName) {
     var key = (clubName || '').trim().toLowerCase();
     if (!key) return [];
     var specific = [], generic = [];
     for (var i = 0; i < KNOWN_COURSES.length; i++) {
-      var m = KNOWN_COURSES[i].match;
-      var keywords = Array.isArray(m) ? m : [m];
-      var matchedSpecific = false, matchedGeneric = false;
-      for (var j = 0; j < keywords.length; j++) {
-        if (!keywords[j] || key.indexOf(keywords[j]) === -1) continue;
-        if (keywords[j] === 'albatross') matchedGeneric = true;
-        else matchedSpecific = true;
-      }
-      if (matchedSpecific) specific.push(KNOWN_COURSES[i]);
-      else if (matchedGeneric) generic.push(KNOWN_COURSES[i]);
+      var course = KNOWN_COURSES[i];
+      var specificKw = Array.isArray(course.match) ? course.match : (course.match ? [course.match] : []);
+      var genericKw = Array.isArray(course.genericMatch) ? course.genericMatch : (course.genericMatch ? [course.genericMatch] : []);
+      var hitSpecific = specificKw.some(function (k) { return k && key.indexOf(k) !== -1; });
+      var hitGeneric = genericKw.some(function (k) { return k && key.indexOf(k) !== -1; });
+      if (hitSpecific) specific.push(course);
+      else if (hitGeneric) generic.push(course);
     }
-    // a precise course name (e.g. "Birdiebanan") should resolve directly;
-    // only fall back to showing every course when nothing more specific matched
-    // (e.g. a generic "Albatross Golfklubb" from GPS)
+    // a precise course name (e.g. "Birdiebanan", "Norra banan") should resolve
+    // directly; only fall back to showing every course when nothing more
+    // specific matched (e.g. a generic "Albatross Golfklubb" from GPS)
     return specific.length > 0 ? specific : generic;
+  }
+  function findKnownCourse(clubName) {
+    return findAllKnownCourses(clubName)[0] || null;
   }
   function findCourseByKey(key) {
     if (!key) return null;
@@ -1493,6 +1489,7 @@
   var clubResultsSelect = document.getElementById('clubResults');
   var courseStatus = document.getElementById('courseStatus');
   var locateBtn = document.getElementById('locateBtn');
+  var searchClubBtn = document.getElementById('searchClubBtn');
   var playersFields = document.getElementById('playersFields');
   var addPlayerBtn = document.getElementById('addPlayerBtn');
   var headRow = document.getElementById('headRow');
@@ -1566,6 +1563,8 @@
     }
     document.getElementById('parTotalLabel').textContent = totalPar();
     document.getElementById('parTotalCell').textContent = totalPar();
+    var subtitleHolesEl = document.getElementById('subtitleHoles');
+    if (subtitleHolesEl) subtitleHolesEl.textContent = t('subtitle_holes_count', { n: HOLES });
   }
   rebuildHoleColumns();
 
@@ -2750,6 +2749,23 @@
 
   var lastClubResults = [];
 
+  function renderClubResults(deduped) {
+    lastClubResults = deduped.slice(0, 8);
+    clubResultsSelect.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = t('search_choose_from_list', { n: lastClubResults.length });
+    clubResultsSelect.appendChild(placeholder);
+    lastClubResults.forEach(function (c, i) {
+      var opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = c.dist != null ? (c.name + ' (' + c.dist.toFixed(1) + ' km)') : c.name;
+      clubResultsSelect.appendChild(opt);
+    });
+    clubResultsSelect.style.display = 'block';
+    setCourseStatus(t('search_results_found', { n: lastClubResults.length }), 'success');
+  }
+
   function findNearbyClubs() {
     locateBtn.disabled = true;
     locateBtn.classList.add('loading');
@@ -2767,28 +2783,15 @@
           if (!seen[c.name]) { seen[c.name] = true; deduped.push(c); }
         });
         if (deduped.length === 0) {
-          setCourseStatus('Ingen golfklubb hittades inom 25 km. Fyll i manuellt.', 'error');
+          setCourseStatus(t('geo_no_club_25km'), 'error');
           showToast(t('toast_no_club_found'));
           return;
         }
-        lastClubResults = deduped.slice(0, 8);
-        clubResultsSelect.innerHTML = '';
-        var placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = lastClubResults.length + ' klubbar hittade — välj en';
-        clubResultsSelect.appendChild(placeholder);
-        lastClubResults.forEach(function (c, i) {
-          var opt = document.createElement('option');
-          opt.value = String(i);
-          opt.textContent = c.name + ' (' + c.dist.toFixed(1) + ' km)';
-          clubResultsSelect.appendChild(opt);
-        });
-        clubResultsSelect.style.display = 'block';
-        setCourseStatus(lastClubResults.length + ' klubbar hittade — välj i listan nedan', 'success');
+        renderClubResults(deduped);
       });
     }).catch(function (err) {
       var msg = t('geo_could_not_fetch');
-      if (err && err.code === 1) msg = 'Platsåtkomst nekad. Tillåt plats för Safari i Inställningar.';
+      if (err && err.code === 1) msg = t('geo_permission_denied');
       else if (err && err.code === 2) msg = t('geo_could_not_determine');
       else if (err && err.code === 3) msg = t('geo_timeout');
       else if (err && err.message) msg = err.message;
@@ -2797,6 +2800,64 @@
     }).finally(function () {
       locateBtn.disabled = false;
       locateBtn.classList.remove('loading');
+    });
+  }
+
+  // Sweden-ish bounding box (south, west, north, east) to keep the name search fast and relevant
+  var SWEDEN_BBOX = '54.9,10.5,69.5,24.3';
+  function escapeOverpassRegex(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  function overpassGolfCoursesByName(query) {
+    var safe = escapeOverpassRegex(query);
+    var q = '[out:json][timeout:20];(' +
+      'node["leisure"="golf_course"]["name"~"' + safe + '",i](' + SWEDEN_BBOX + ');' +
+      'way["leisure"="golf_course"]["name"~"' + safe + '",i](' + SWEDEN_BBOX + ');' +
+      'relation["leisure"="golf_course"]["name"~"' + safe + '",i](' + SWEDEN_BBOX + ');' +
+      ');out center tags;';
+    return fetchOverpass(q).then(function (data) {
+      return (data.elements || [])
+        .filter(function (el) { return el.tags && el.tags.name; })
+        .map(function (el) {
+          var elat = el.lat != null ? el.lat : (el.center && el.center.lat);
+          var elon = el.lon != null ? el.lon : (el.center && el.center.lon);
+          if (elat == null || elon == null) return null;
+          return { name: el.tags.name, lat: elat, lon: elon };
+        })
+        .filter(Boolean)
+        .sort(function (a, b) { return a.name.localeCompare(b.name, 'sv'); });
+    });
+  }
+
+  function searchClubByName() {
+    var query = (clubInput.value || '').trim();
+    if (query.length < 3) {
+      setCourseStatus(t('search_type_name_first'), 'error');
+      return;
+    }
+    searchClubBtn.disabled = true;
+    searchClubBtn.classList.add('loading');
+    setCourseStatus(t('search_searching', { query: query }));
+    clubResultsSelect.style.display = 'none';
+
+    overpassGolfCoursesByName(query).then(function (candidates) {
+      var seen = {};
+      var deduped = [];
+      candidates.forEach(function (c) {
+        if (!seen[c.name]) { seen[c.name] = true; deduped.push(c); }
+      });
+      if (deduped.length === 0) {
+        setCourseStatus(t('search_no_results', { query: query }), 'error');
+        showToast(t('toast_no_club_found'));
+        return;
+      }
+      renderClubResults(deduped);
+    }).catch(function (err) {
+      setCourseStatus((err && err.message) || t('geo_could_not_fetch'), 'error');
+      showToast(t('toast_locate_failed'));
+    }).finally(function () {
+      searchClubBtn.disabled = false;
+      searchClubBtn.classList.remove('loading');
     });
   }
 
@@ -2819,6 +2880,7 @@
   });
 
   locateBtn.addEventListener('click', findNearbyClubs);
+  searchClubBtn.addEventListener('click', searchClubByName);
 
   function collectHistoryPlayerNames() {
     var seenKeys = {};
@@ -3122,7 +3184,7 @@
     ctx.fillText('KLUBBRUNDA · ' + HOLES + ' HÅL · PAR ' + totalPar(), 20, 24);
     ctx.fillStyle = '#f7f4e9';
     ctx.font = '800 22px Bitter, serif';
-    ctx.fillText(courseLabel(state) || 'Niohåls-scorekort', 20, 52);
+    ctx.fillText(courseLabel(state) || 'Golfscorekort', 20, 52);
     ctx.fillStyle = '#a9c2ab';
     ctx.font = '11px IBM Plex Mono, monospace';
     ctx.fillText(state.date + '   ·   ' + state.startTime, 20, 74);
@@ -3186,7 +3248,7 @@
     ctx.fillStyle = '#a9c2ab';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#8a8060';
-    ctx.fillText('Skapat med Niohåls-scorekort', 20, H - 14);
+    ctx.fillText('Skapat med Golfscorekort', 20, H - 14);
 
     return new Promise(function (resolve) {
       canvas.toBlob(function (blob) { resolve(blob); }, 'image/png');
